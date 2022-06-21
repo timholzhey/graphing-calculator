@@ -25,7 +25,10 @@
   ],
   "scripts": {
     "clean": "rm -fr build",
-    "build": "npm run clean && npm run lint && webpack",
+    "clean-win": "if exist build rmdir build /q /s",
+    "dev": "webpack",
+    "build": "npm run clean && npm run lint && webpack --config webpack.prod.js",
+    "build-win": "npm run clean-win && npm run lint && webpack --config webpack.prod.js",
     "lint": "eslint src --ext js,jsx,ts,tsx --fix"
   },
   "keywords": [

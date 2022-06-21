@@ -15,15 +15,23 @@
         You need to enable JavaScript to run this app.
     </noscript>
     <div id="app">
-        <div id="menu-bar"></div>
-        <div id="content"></div>
-        <div id="left-panel">
-            <div class="inputs">
-                <div class="input">
-                    <div class="status"></div>
-                    <input type="text" id="0" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" autofocus>
+        <div id="menu-bar">
+            <div class="menu-bar-left"></div>
+            <div class="menu-bar-right">
+                <div class="menu-bar-button">
+                    <button class="github-button" data-href="https://github.com/timholzhey/graphing-calculator" data-icon="../assets/images/github_1024_black.png" data-filter="invert(1)"></button>
                 </div>
             </div>
+        </div>
+        <div id="content">
+            <canvas id="shader-canvas" width="1000" height="1000"></canvas>
+            <canvas id="main-canvas" width="1000" height="1000"></canvas>
+        </div>
+        <div id="left-panel">
+            <div class="inputs">
+                <!-- Inputs-->
+            </div>
+            <div class="resize-area"></div>
         </div>
     </div>
     <script src="./build/bundle.js"></script>

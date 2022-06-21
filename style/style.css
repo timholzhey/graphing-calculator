@@ -1,14 +1,20 @@
 :root {
-    --color-primary: #00bcd4;
-    --color-background-dark: #212121;
-    --color-background-medium: #525252;
+    --color-accent: #00d6c4;
+    --color-background-dark: #0A0A0A;
+    --color-background-medium: #262626;
     --color-background-light: #e0e0e0;
     --color-text-light: #ffffff;
+    --menu-bar-height: 3em;
+    --left-panel-width: 30em;
 }
 
 @font-face {
     font-family: 'Open Sans';
     src: url('../style/Open_Sans/static/OpenSans/OpenSans-Regular.ttf');
+}
+
+html {
+    overflow: none;
 }
 
 body {
@@ -26,24 +32,52 @@ body {
     padding: 0;
 }
 
+#main-canvas,
+#shader-canvas {
+    position: absolute;
+    top: var(--menu-bar-height);
+    left: var(--left-panel-width);
+    width: calc(100% - var(--left-panel-width));
+    height: calc(100% - var(--menu-bar-height));
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
 #menu-bar {
     width: 100%;
-    height: 3em;
+    height: var(--menu-bar-height);
     background-color: var(--color-background-medium);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    z-index: 100;
 }
 
 #content {
     width: 100%;
-    height: calc(100% - 3em);
+    height: calc(100% - var(--menu-bar-height));
 }
 
 #left-panel {
     position: absolute;
     top: 3em;
     left: 0;
-    width: 30em;
+    width: var(--left-panel-width);
     height: calc(100% - 3em);
     background: var(--color-background-light);
+    box-shadow: 0 0 10px 12px #00000036;
+}
+
+#left-panel .resize-area {
+    position: absolute;
+    top: 0;
+    right: -5px;
+    width: 15px;
+    height: 100%;
+    cursor: ew-resize;
+    user-select: none;
 }
 
 .inputs {
@@ -57,6 +91,20 @@ body {
     display: flex;
     width: 100%;
     height: 4em;
+    border-bottom: 1px solid lightgray;
+    position: relative;
+}
+
+.input.active {
+    border-bottom: 2px solid var(--color-accent);
+}
+
+.input:not(:first-child) {
+    border-top: 1px solid lightgray;
+}
+
+.input.active:not(:first-child) {
+    border-top: 2px solid var(--color-accent);
 }
 
 .input .status {
@@ -73,4 +121,63 @@ body {
     padding: 0;
     font-size: 1.2em;
     padding-left: 1em;
+    position: relative;
+}
+
+.menu-bar-button {
+    height: 100%;
+    width: 3em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-bar-left {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-left: 1em;
+}
+
+.menu-bar-right {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-right: 1em;
+}
+
+.menu-bar-button > button {
+    width: 100%;
+    height: 100%;
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.button-icon {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 100%;
+    height: 100%;
+}
+
+.input .delete {
+    position: absolute;
+    width: 1em;
+    height: 1em;
+    top: 0;
+    right: 0;
+    color: gray;
+    font-size: 1.5em;
+    user-select: none;
+}
+
+.input .delete:hover {
+    color: var(--color-background-dark);
+    cursor: pointer;
+    font-weight: bold;
 }
