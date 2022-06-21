@@ -1,0 +1,76 @@
+:root {
+    --color-primary: #00bcd4;
+    --color-background-dark: #212121;
+    --color-background-medium: #525252;
+    --color-background-light: #e0e0e0;
+    --color-text-light: #ffffff;
+}
+
+@font-face {
+    font-family: 'Open Sans';
+    src: url('../style/Open_Sans/static/OpenSans/OpenSans-Regular.ttf');
+}
+
+body {
+    background-color: var(--color-background-dark);
+    padding: 0;
+    margin: 0;
+    color: var(--color-text-light);
+    font-family: 'Open Sans', sans-serif;
+}
+
+#app {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+#menu-bar {
+    width: 100%;
+    height: 3em;
+    background-color: var(--color-background-medium);
+}
+
+#content {
+    width: 100%;
+    height: calc(100% - 3em);
+}
+
+#left-panel {
+    position: absolute;
+    top: 3em;
+    left: 0;
+    width: 30em;
+    height: calc(100% - 3em);
+    background: var(--color-background-light);
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.input {
+    display: flex;
+    width: 100%;
+    height: 4em;
+}
+
+.input .status {
+    height: 100%;
+    aspect-ratio: 1;
+}
+
+.input input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    font-size: 1.2em;
+    padding-left: 1em;
+}

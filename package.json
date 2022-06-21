@@ -1,0 +1,39 @@
+{
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.29.0",
+    "@typescript-eslint/parser": "^5.29.0",
+    "eslint": "^8.18.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.2.3",
+    "eslint-plugin-promise": "^6.0.0",
+    "lint": "^0.7.0",
+    "ts-loader": "^9.3.0",
+    "typescript": "^4.7.4",
+    "webpack": "^5.73.0",
+    "webpack-cli": "^4.10.0"
+  },
+  "name": "graphing-calculator",
+  "version": "1.0.0",
+  "description": "A graphing calculator running in the browser",
+  "main": "dist/index.js",
+  "module": "dist/index.min.mjs",
+  "unpkg": "dist/index.umd.min.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "rm -fr build",
+    "build": "npm run clean && npm run lint && webpack",
+    "lint": "eslint src --ext js,jsx,ts,tsx --fix"
+  },
+  "keywords": [
+    "graphing",
+    "calculator",
+    "maths",
+    "plot"
+  ],
+  "author": "Tim Holzhey",
+  "license": "MIT"
+}
