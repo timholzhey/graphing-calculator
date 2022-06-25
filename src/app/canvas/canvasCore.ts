@@ -5,6 +5,9 @@ import { onMouseDrag } from '../ui/userInteract'
 export const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement
 const ctx = mainCanvas.getContext('2d')
 
+const zoomButtonIn = document.querySelector('.zoom-in-button') as HTMLButtonElement
+const zoomButtonOut = document.querySelector('.zoom-out-button') as HTMLButtonElement
+
 const offset = new Vector(0, 0)
 let scale = 1.0
 const subdivisions = 16
@@ -16,6 +19,21 @@ let isDragged = false
 const zoomCanvas = function (norm: number) {
 	scale *= norm > 0 ? 1 + 0.2 * norm : 1 / (1 - 0.2 * norm)
 	scheduleRedraw()
+}
+
+const zoomSmooth = function (norm: number): void {
+	const targetScale = scale * (norm > 0 ? 1 + 0.2 * norm : 1 / (1 - 0.2 * norm))
+	const animationResolution = 0.1
+	const step = (targetScale - scale) / (1 / animationResolution)
+	let counter = 0
+	const interval = setInterval(function () {
+		scale += step
+		scheduleRedraw()
+		counter++
+		if (counter >= 1 / animationResolution) {
+			clearInterval(interval)
+		}
+	}, 10)
 }
 
 export const canvasInit = function (): void {
@@ -42,6 +60,14 @@ export const canvasInit = function (): void {
 
 	mainCanvas.addEventListener('wheel', (e: WheelEvent) => {
 		zoomCanvas(-e.deltaY / 200)
+	})
+
+	zoomButtonIn.addEventListener('click', () => {
+		zoomSmooth(1)
+	})
+
+	zoomButtonOut.addEventListener('click', () => {
+		zoomSmooth(-1)
 	})
 }
 

@@ -1,16 +1,31 @@
 :root {
     --color-accent: #00d6c4;
-    --color-background-dark: #0A0A0A;
+    --color-background-dark: #101010;
     --color-background-medium: #262626;
-    --color-background-light: #e0e0e0;
+    --color-background-light: #938e8a;
+    --color-background-input: f3eee8;
+    --color-background-status: #cac8c4;
     --color-text-light: #ffffff;
     --menu-bar-height: 3em;
     --left-panel-width: 30em;
 }
 
+/* Regular text */
 @font-face {
     font-family: 'Open Sans';
     src: url('../style/Open_Sans/static/OpenSans/OpenSans-Regular.ttf');
+}
+
+/* Title */
+@font-face {
+    font-family: 'Adam.CG Pro';
+    src: url('../style/AdamCGPro.otf');
+}
+
+/* Math */
+@font-face {
+    font-family: 'Font Awesome';
+    src: url('../style/font-awesome.woff2') format('woff2');
 }
 
 html {
@@ -35,10 +50,10 @@ body {
 #main-canvas,
 #shader-canvas {
     position: absolute;
-    top: var(--menu-bar-height);
-    left: var(--left-panel-width);
-    width: calc(100% - var(--left-panel-width));
-    height: calc(100% - var(--menu-bar-height));
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     margin: 0;
     padding: 0;
     user-select: none;
@@ -53,27 +68,36 @@ body {
     align-items: center;
     position: absolute;
     z-index: 100;
+    top: 0;
+    left: 0;
+    box-shadow: 0 0 5px 0px #151515c4;
 }
 
 #content {
     width: 100%;
     height: calc(100% - var(--menu-bar-height));
+    width: calc(100% - var(--left-panel-width));
+    top: var(--menu-bar-height);
+    left: var(--left-panel-width);
+    position: relative;
 }
 
 #left-panel {
     position: absolute;
-    top: 3em;
+    top: calc(var(--menu-bar-height) + 0.3px);
     left: 0;
     width: var(--left-panel-width);
     height: calc(100% - 3em);
-    background: var(--color-background-light);
-    box-shadow: 0 0 10px 12px #00000036;
+    background-color: var(--color-background-light);
+    box-shadow: 0 0 10px 0px #7171714a;
+    border-radius: 4px;
+    overflow: hidden;
 }
 
 #left-panel .resize-area {
     position: absolute;
     top: 0;
-    right: -5px;
+    right: -10px;
     width: 15px;
     height: 100%;
     cursor: ew-resize;
@@ -93,7 +117,67 @@ body {
     height: 4em;
     border-bottom: 1px solid lightgray;
     position: relative;
+    background-color: var(--color-background-input);
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
 }
+
+.input.created {
+    animation: input-create 120ms ease-out forwards;
+}
+
+.input.deleted {
+    animation: input-delete 120ms ease-in forwards;
+}
+
+.input.illegal {
+    animation: input-illegal 200ms cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes input-create {
+    from {
+        width: 50%;
+        margin-left: 25%;
+        opacity: 0.5;
+    }
+    to {
+        width: 100%;
+        margin-left: 0;
+        opacity: 1;
+    }
+}
+
+@keyframes input-delete {
+    from {
+        width: 100%;
+        margin-left: 0;
+        opacity: 1;
+    }
+    to {
+        width: 50%;
+        margin-left: 25%;
+        opacity: 0.5;
+    }
+}
+
+@keyframes input-illegal {
+    10%, 90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    
+    20%, 80% {
+      transform: translate3d(2px, 0, 0);
+    }
+  
+    30%, 50%, 70% {
+      transform: translate3d(-4px, 0, 0);
+    }
+  
+    40%, 60% {
+      transform: translate3d(4px, 0, 0);
+    }
+  }
 
 .input.active {
     border-bottom: 2px solid var(--color-accent);
@@ -109,7 +193,22 @@ body {
 
 .input .status {
     height: 100%;
+    aspect-ratio: 0.8;
+    background-color: var(--color-background-status);
+    display: grid;
+    place-items: center;
+}
+
+.input .status .indicator {
+    width: 40%;
     aspect-ratio: 1;
+    border-radius: 50%;
+    outline: 3px solid var(--color-background-light);
+    cursor: pointer;
+}
+
+.input.active .status {
+    background-color: var(--color-accent);
 }
 
 .input input {
@@ -157,6 +256,22 @@ body {
     cursor: pointer;
 }
 
+.menu-bar-title {
+    height: 100%;
+    width: var(--left-panel-width);
+    display: grid;
+    place-items: center;
+}
+
+.menu-bar-title h1 {
+    font-size: 1.5em;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+    font-family: 'Adam.CG Pro';
+    padding-bottom: 0.25em;
+}
+
 .button-icon {
     background-size: contain;
     background-repeat: no-repeat;
@@ -180,4 +295,37 @@ body {
     color: var(--color-background-dark);
     cursor: pointer;
     font-weight: bold;
+}
+
+.canvas-actions {
+    float: right;
+    margin: 0.75em;
+    position: absolute;
+    right: 0;
+    overflow: hidden;
+    border-radius: 2px;
+    display: flex;
+    box-shadow: 0 0 10px 0px #71717128;
+}
+
+.zoom-in-button,
+.zoom-out-button {
+    cursor: pointer;
+    outline: none;
+    border: none;
+    width: 1.5em;
+    height: 1.5em;
+    margin: 0;
+    font-size: larger;
+    font-family: verdana;
+    padding-bottom: 1em;
+    background-color: var(--color-background-light);
+}
+
+.zoom-in-button {
+    border-right: 1px solid var(--color-background-medium);
+}
+
+.zoom-out-button {
+    border-left: 1px solid var(--color-background-medium);
 }

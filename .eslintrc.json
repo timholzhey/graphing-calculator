@@ -15,8 +15,8 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "no-unused-vars": "off",
-        "indent": [2, "tab"],
-        "no-tabs": 0
+        "indent": ["error", "tab"],
+        "no-tabs": ["error", {"allowIndentationTabs": true}],
+        "no-trailing-spaces": ["error", { "skipBlankLines": true }]
     }
 }
