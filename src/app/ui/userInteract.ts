@@ -15,7 +15,7 @@ export const onMouseDrag = function (elt: HTMLElement, callback: (pos: Vector) =
 	mouseCallbacks.set(elt, callback)
 }
 
-export const userInteractInit = function (): void {
+export const initUserInteract = function (): void {
 	document.addEventListener('mousedown', function (e: MouseEvent): void {
 		mouseDown = true
 	})
@@ -28,7 +28,7 @@ export const userInteractInit = function (): void {
 			return
 		}
 		for (const [elt, callback] of mouseCallbacks) {
-			if (elt.contains(e.target as Node)) {
+			if (elt?.contains(e.target as Node)) {
 				callback(mousePos)
 				mouseClaimed = true
 				claimedCallback = callback

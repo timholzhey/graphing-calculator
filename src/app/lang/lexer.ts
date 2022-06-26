@@ -7,10 +7,10 @@ export enum Token {
 	CONST,
 	PAREN_OP,
 	PAREN_CL,
-	PAREN2_OP,
-	PAREN2_CL,
-	SET_OP,
-	SET_CL,
+	BRACKET_OP,
+	BRACKET_CL,
+	BRACE_OP,
+	BRACE_CL,
 	DELIM,
 	ASSIGN,
 	ASSIGNABLE,
@@ -26,7 +26,6 @@ export enum Token {
 	POW,
 	AND,
 	OR,
-	XOR,
 	NOT_EQUAL,
 	EQUAL,
 	TRUE,
@@ -62,11 +61,10 @@ export enum Token {
 	MOUSE
 }
 
-enum TokenFlag {
+export enum TokenFlag {
 	IMPL_MULT_BEFORE = 1,
 	IMPL_MULT_AFTER = 2,
 	PREFIX = 4,
-	POSTFIX = 8,
 	UNIQUE = 16,
 	BEGIN_SCOPE = 32,
 	END_SCOPE = 64
@@ -77,10 +75,10 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	// Control
 	'(': { tok: Token.PAREN_OP, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.UNIQUE | TokenFlag.BEGIN_SCOPE },
 	')': { tok: Token.PAREN_CL, flags: TokenFlag.IMPL_MULT_AFTER | TokenFlag.UNIQUE | TokenFlag.END_SCOPE },
-	'[': { tok: Token.PAREN2_OP, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.UNIQUE | TokenFlag.BEGIN_SCOPE },
-	']': { tok: Token.PAREN2_CL, flags: TokenFlag.IMPL_MULT_AFTER | TokenFlag.UNIQUE | TokenFlag.END_SCOPE },
-	'{': { tok: Token.SET_OP, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.UNIQUE | TokenFlag.BEGIN_SCOPE },
-	'}': { tok: Token.SET_CL, flags: TokenFlag.IMPL_MULT_AFTER | TokenFlag.UNIQUE | TokenFlag.END_SCOPE },
+	'[': { tok: Token.BRACKET_OP, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.UNIQUE | TokenFlag.BEGIN_SCOPE },
+	']': { tok: Token.BRACKET_CL, flags: TokenFlag.IMPL_MULT_AFTER | TokenFlag.UNIQUE | TokenFlag.END_SCOPE },
+	'{': { tok: Token.BRACE_OP, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.UNIQUE | TokenFlag.BEGIN_SCOPE },
+	'}': { tok: Token.BRACE_CL, flags: TokenFlag.IMPL_MULT_AFTER | TokenFlag.UNIQUE | TokenFlag.END_SCOPE },
 	',': { tok: Token.DELIM, flags: TokenFlag.UNIQUE },
 	'=': { tok: Token.ASSIGN, flags: 0 },
 
@@ -183,9 +181,8 @@ const escapeRegExp = (str: string) => {
 
 export type Error = { desc: string, pos: number }
 
-let latestError: Error = { desc: '', pos: 0 }
-let isError = false
-export const getError = (): Error | null => isError ? latestError : null
+let latestError: Error | null = null
+export const lexerGetError = (): Error | null => latestError
 
 const reportError = (error: string, position: number) => {
 	console.error(`Error at position ${position}: ${error}`)
@@ -196,14 +193,36 @@ const isIdentifier = (str: string): boolean => {
 	return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(str)
 }
 
-// getter and setter functions
-const ExternVariables: { [key: string]: { (): number, (value: number): void } } = {}
+const ExternVariables: { [key: string]: { get: () => number, set: (val: number) => void } } = {}
 
-// define data structure OpCode has a tok: Token, val: number, flags: TokenFlag
+export const bindExternVariable = (name: string, getter: () => number, setter: (value: number) => void) => {
+	ExternVariables[name] = { get: getter, set: setter }
+}
+
+export const unbindExternVariable = (name: string) => {
+	delete ExternVariables[name]
+}
+
+export const getExternVariable = (name: string): { get: () => number, set: (val: number) => void } | null => {
+	return ExternVariables[name]
+}
+
+let UserVariables: { [key: string]: number } = {}
+
+export const setUserVariable = (name: string, value: number) => {
+	UserVariables[name] = value
+}
+
+export const getUserVariable = (name: string): number => UserVariables[name] || 0
+
+export const clearUserVariables = () => {
+	UserVariables = {}
+}
+
 export type OpCode = { tok: Token, val: number | string, flags: TokenFlag }
 
 export const lex = (str: string): OpCode[] => {
-	isError = false
+	latestError = null
 
 	str = str.replace(/\s/g, '')
 
@@ -252,7 +271,7 @@ export const lex = (str: string): OpCode[] => {
 					i = chunk.length + 1
 					continue
 				}
-				reportError(`Unknown token: ${chunk.substring(from, chunk.length)}`, pos + from)
+				reportError(`Unknown token: ´${chunk.substring(from, chunk.length)}´`, pos + from)
 				return []
 			}
 

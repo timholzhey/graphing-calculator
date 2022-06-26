@@ -15,8 +15,14 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "indent": ["error", "tab"],
+        "indent": "off",
         "no-tabs": ["error", {"allowIndentationTabs": true}],
-        "no-trailing-spaces": ["error", { "skipBlankLines": true }]
-    }
+        "no-trailing-spaces": ["error", { "skipBlankLines": true }],
+        "no-unused-vars": "off"
+    },
+    "ignorePatterns": [
+        "node_modules/",
+        "dist/",
+        "build/"
+    ]
 }

@@ -1,6 +1,8 @@
-import { Vector } from '../utils'
+import { map, Vector } from '../utils'
 import { scheduleRedraw } from '../../index'
 import { onMouseDrag } from '../ui/userInteract'
+import { ASTNode } from '../lang/parser'
+import { constantEvalGetError, constantEvalX } from '../core/constantEval'
 
 export const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement
 const ctx = mainCanvas.getContext('2d')
@@ -11,6 +13,7 @@ const zoomButtonOut = document.querySelector('.zoom-out-button') as HTMLButtonEl
 const offset = new Vector(0, 0)
 let scale = 1.0
 const subdivisions = 16
+const step = 0.01
 
 const dragFromOffset = new Vector(0, 0)
 const dragFromMouse = new Vector(0, 0)
@@ -36,7 +39,7 @@ const zoomSmooth = function (norm: number): void {
 	}, 10)
 }
 
-export const canvasInit = function (): void {
+export const initCanvas = function (): void {
 	mainCanvas.addEventListener('mousedown', function (e: MouseEvent): void {
 		dragFromOffset.set(offset.x, offset.y)
 		dragFromMouse.set(e.clientX, e.clientY)
@@ -160,4 +163,41 @@ const drawGrid = function (): void {
 		ctx.beginPath()
 		ctx.fillText(xSub.toString(), x + xError + xRepeatOffset, height / 2 + offset.y + 20)
 	}
+}
+
+export const canvasDrawFunction = function (ast: ASTNode | null, color: string): void {
+	if (!ctx || !ast) return
+
+	const width = mainCanvas.width
+	const height = mainCanvas.height
+	const aspect = width / height
+
+	ctx.strokeStyle = color
+	ctx.lineWidth = 2.5
+	ctx.fillStyle = 'transparent'
+	ctx.beginPath()
+
+	const xStep = width / subdivisions / aspect * scale
+	const xOffset = offset.x / xStep
+	let moveTo = true
+	
+	for (let x = -subdivisions / 2 * aspect / scale - xOffset; x < subdivisions / 2 * aspect / scale - xOffset; x += step / scale) {
+		const f = constantEvalX(ast, x)
+
+		const error = constantEvalGetError()
+		if (error) {
+			return
+		}
+
+		const mappedX = map(x, -subdivisions / 2 * aspect / scale, subdivisions / 2 * aspect / scale, 0, width) + offset.x
+		const mappedY = map(f, -subdivisions / 2 / scale, subdivisions / 2 / scale, height, 0) + offset.y
+		
+		if (moveTo) {
+			ctx.moveTo(mappedX, mappedY)
+			moveTo = false
+		}
+		ctx.lineTo(mappedX, mappedY)
+	}
+
+	ctx.stroke()
 }
