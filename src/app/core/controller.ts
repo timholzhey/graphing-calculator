@@ -3,6 +3,7 @@ import { canvasDrawFunction } from '../canvas/canvasCore'
 import { PlotDisplayMode, PlotDriver, PlotStatus } from '../defines'
 import { Error } from '../lang/lexer'
 import { ASTNode, parse, parserGetDisplayMode, parserGetError, parserGetNumVars } from '../lang/parser'
+import { buildShaderFunction } from '../shader/shaderFunction'
 import { inputSetColorAt, inputSetConstEvalAt, inputSetDriverAt, inputSetErrorAt, inputSetStatusAt } from '../ui/leftPanel'
 import { constantEval, constantEvalGetError } from './constantEval'
 
@@ -13,6 +14,7 @@ type Plot = {
     status: PlotStatus,
     driver: PlotDriver,
     displayMode: PlotDisplayMode,
+    shaderFunction: string,
     color: string,
     error: string,
 }
@@ -57,6 +59,7 @@ export const drivePlots = (): void => {
                 status: PlotStatus.PENDING,
                 driver: PlotDriver.CANVAS,
                 displayMode: PlotDisplayMode.NONE,
+                shaderFunction: '',
                 color: getColorFromIndex(i),
                 error: ''
             }
@@ -122,6 +125,11 @@ export const drivePlots = (): void => {
 
             // Check process mode
             plot.displayMode = parserGetDisplayMode()
+
+            // Build shader function
+            if (plot.driver === PlotDriver.WEBGL) {
+                plot.shaderFunction = buildShaderFunction(plot.ast)
+            }
         }
     }
 }
@@ -147,6 +155,7 @@ export const drawPlots = (): void => {
                 }
                 break
             }
+
             case PlotDriver.CANVAS: {
                 canvasDrawFunction(plot.ast, plot.color)
 
@@ -159,9 +168,31 @@ export const drawPlots = (): void => {
                 }
                 break
             }
+
             case PlotDriver.WEBGL:
-                // webGLDriver(plot.ast, plot.color, plot.displayMode)
                 break
         }
     }
+}
+
+export const getPlotsShaderInfo = (): { functions: string[], colors: string[], displayModes: PlotDisplayMode[], numPlots: number } => {
+    const shaderFunctions: string[] = []
+    const colors: string[] = []
+    const displayModes: PlotDisplayMode[] = []
+    let numPlots = 0
+
+    for (let i = 1; i <= numInputs; i++) {
+        const plot = plots[i]
+
+        if (!plot || plot.driver !== PlotDriver.WEBGL || plot.status !== PlotStatus.ACTIVE) continue
+
+        if (plot.driver !== PlotDriver.WEBGL) continue
+
+        shaderFunctions.push(plot.shaderFunction)
+        colors.push(plot.color)
+        displayModes.push(plot.displayMode)
+        numPlots++
+    }
+
+    return { functions: shaderFunctions, colors, displayModes, numPlots }
 }

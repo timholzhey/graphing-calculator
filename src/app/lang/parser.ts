@@ -55,7 +55,8 @@ export const parse = (input: string): ASTNode | null => {
 		return null
 	}
 
-	numVars = ops.filter(op => op.tok === Token.VAR).length > 0 ? 1 : 0 + ops.filter(op => op.tok === Token.VAR2).length > 0 ? 1 : 0
+	numVars = (ops.filter(op => op.tok === Token.VAR).length > 0 ? 1 : 0) +
+		(ops.filter(op => op.tok === Token.VAR2).length > 0 ? 1 : 0)
 	
 	if (numVars === 0) {
 		displayMode = PlotDisplayMode.CONSTANT_EVAL

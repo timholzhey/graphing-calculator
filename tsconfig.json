@@ -9,7 +9,8 @@
     "strict": true,
     "target": "es6",
     "outDir": "./dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "allowJs": true
   },
   "include": [
     "src/**/*"

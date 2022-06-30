@@ -201,3 +201,21 @@ export const canvasDrawFunction = function (ast: ASTNode | null, color: string):
 
 	ctx.stroke()
 }
+
+export const getDomain = function (): { minX: number, maxX: number, minY: number, maxY: number } {
+	const width = mainCanvas.width
+	const height = mainCanvas.height
+	const aspect = width / height
+
+    const xStep = width / subdivisions / aspect * scale
+    const xOffset = offset.x / xStep
+    const minX = -subdivisions / 2 * aspect / scale - xOffset
+    const maxX = subdivisions / 2 * aspect / scale - xOffset
+
+    const yStep = height / subdivisions * scale
+    const yOffset = offset.y / yStep
+    const minY = -subdivisions / 2 / scale + yOffset
+    const maxY = subdivisions / 2 / scale + yOffset
+
+    return { minX, maxX, minY, maxY }
+}

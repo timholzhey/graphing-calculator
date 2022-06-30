@@ -3,6 +3,7 @@ import { initMenuBar } from './app/ui/menubar'
 import { canvasDraw, initCanvas } from './app/canvas/canvasCore'
 import { initUserInteract } from './app/ui/userInteract'
 import { drawPlots, drivePlots } from './app/core/controller'
+import { shadersDraw, initShaderCore, shaderCoreUpdate } from './app/shader/shaderCore'
 
 let drawFrame = true
 let frameTime = 0
@@ -18,6 +19,7 @@ window.onload = function () {
 	initMenuBar()
 	initLeftPanel()
 	initCanvas()
+	initShaderCore()
 
 	mainLoop()
 }
@@ -26,10 +28,12 @@ const mainLoop = function () {
 	if (drawFrame) {
 		drawFrame = false
 		canvasDraw()
+		shadersDraw()
 		drawPlots()
 	}
 
 	drivePlots()
+	shaderCoreUpdate()
 	frameTime += 0.01
 
 	requestAnimationFrame(mainLoop)
