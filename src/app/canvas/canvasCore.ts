@@ -3,6 +3,7 @@ import { scheduleRedraw } from '../../index'
 import { onMouseDrag } from '../ui/userInteract'
 import { ASTNode } from '../lang/parser'
 import { constantEvalGetError, constantEvalX } from '../core/constantEval'
+import { bindExternVariable } from '../lang/lexer'
 
 export const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement
 const ctx = mainCanvas.getContext('2d')
@@ -18,6 +19,8 @@ const step = 0.01
 const dragFromOffset = new Vector(0, 0)
 const dragFromMouse = new Vector(0, 0)
 let isDragged = false
+
+let gridEnabled = true
 
 const zoomCanvas = function (norm: number) {
 	scale *= norm > 0 ? 1 + 0.2 * norm : 1 / (1 - 0.2 * norm)
@@ -72,6 +75,9 @@ export const initCanvas = function (): void {
 	zoomButtonOut.addEventListener('click', () => {
 		zoomSmooth(-1)
 	})
+
+	bindExternVariable('scale', () => scale, (s: number) => (scale = s))
+	bindExternVariable('grid', () => gridEnabled ? 1 : 0, (g: number) => (gridEnabled = g === 1))
 }
 
 export const canvasDraw = function (): void {
@@ -95,7 +101,7 @@ const drawLine = function (fromX: number, fromY: number, toX: number, toY: numbe
 }
 
 const drawGrid = function (): void {
-	if (!ctx) return
+	if (!ctx || !gridEnabled) return
 
 	const width = mainCanvas.width
 	const height = mainCanvas.height

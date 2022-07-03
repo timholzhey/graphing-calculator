@@ -27,13 +27,6 @@ export const initShaderCore = function () {
 	}
 }
 
-function scheduleReloadShaders () {
-	error = false
-	shadersInitialized = false
-	shadersAreInitializing = false
-	scheduleRedraw()
-}
-
 async function fetchBuffered (url: string) {
 	if (!fileBuffers[url]) {
 		const response = await fetch(url)
@@ -83,7 +76,7 @@ async function loadShaders () {
 	})
 }
 
-export function shaderCoreUpdate () {
+export const shaderCoreUpdate = function () {
 	// Shaders are not loaded yet
 	if (!shadersInitialized && !shadersAreInitializing && !error) {
 		loadShaders()
@@ -94,13 +87,25 @@ export function shaderCoreUpdate () {
 	}
 }
 
+export const scheduleReloadShaders = function () {
+	error = false
+	shadersInitialized = false
+	shadersAreInitializing = false
+}
+
 export const shadersDraw = function () {
 	shadersInitialized = false
+
+	if (shadersInitialized && !error) {
+		drawScene()
+		return
+	}
 
 	loadShaders().then(
 		() => {
 			if (!shadersInitialized) {
 				console.error('Failed to initialize shaders')
+				ctx.clearColor(0.0, 0.0, 0.0, 1.0)
 				return
 			}
 			drawScene()
@@ -108,12 +113,19 @@ export const shadersDraw = function () {
 	)
 }
 
+const hexColorToNormalRGBString = function (hex: string): string {
+	const r = parseInt(hex.substring(1, 3), 16)
+	const g = parseInt(hex.substring(3, 5), 16)
+	const b = parseInt(hex.substring(5, 7), 16)
+	return `${r / 255.0}, ${g / 255.0}, ${b / 255.0}`
+}
+
 function injectFunctionsIntoShaderSource (shader: string): string {
 	const plots: { functions: string[], colors: string[], displayModes: PlotDisplayMode[], numPlots: number } = getPlotsShaderInfo()
 	
 	if (plots.numPlots === 0) {
 		plots.functions = []
-		plots.colors = ['']
+		plots.colors = ['#000000']
 		plots.displayModes = [PlotDisplayMode.NONE]
 	}
 
@@ -122,7 +134,7 @@ function injectFunctionsIntoShaderSource (shader: string): string {
 	return shader
 		.replace(/USER_NUM_FUNC_INJ/g, `${plots.numPlots + 1}`)
 		.replace(/USER_FUNC_INJ/g, `float[](${plots.functions.map(f => `(${f})`).join(',')})`)
-		.replace(/USER_COL_INJ/g, `${plots.colors.map(c => `"${c}"`).join(',')}`)
+		.replace(/USER_COL_INJ/g, `vec3[](${plots.colors.map(c => `vec3(${hexColorToNormalRGBString(c)})`).join(',')})`)
 		.replace(/USER_DISP_INJ/g, `int[](${plots.displayModes.map(d => `${d}`).join(',')})`)
 }
 

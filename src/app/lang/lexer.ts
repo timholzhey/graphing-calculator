@@ -67,7 +67,8 @@ export enum TokenFlag {
 	PREFIX = 4,
 	UNIQUE = 16,
 	BEGIN_SCOPE = 32,
-	END_SCOPE = 64
+	END_SCOPE = 64,
+	WEBGL_ONLY = 128,
 }
 
 // Map of strings to their tokens and flags bitfield
@@ -84,7 +85,7 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 
 	// Variables
 	x: { tok: Token.VAR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
-	y: { tok: Token.VAR2, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+	y: { tok: Token.VAR2, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER | TokenFlag.WEBGL_ONLY },
 
 	// Logical
 	'<': { tok: Token.LESS, flags: 0 },
@@ -141,8 +142,8 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	sigmoid: { tok: Token.SIGMOID, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
 
 	// Scalar fields
-	Level: { tok: Token.LEVEL_SET, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
-	Niveau: { tok: Token.LEVEL_SET, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
+	Level: { tok: Token.LEVEL_SET, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	Niveau: { tok: Token.LEVEL_SET, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
 
 	// Vector fields
 	VectorField: { tok: Token.VECTOR_FIELD, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
@@ -151,14 +152,14 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	'|': { tok: Token.ABS, flags: TokenFlag.BEGIN_SCOPE | TokenFlag.END_SCOPE },
 
 	// Shapes
-	Circle: { tok: Token.CIRCLE, flags: TokenFlag.PREFIX },
-	Point: { tok: Token.POINT, flags: TokenFlag.PREFIX },
+	Circle: { tok: Token.CIRCLE, flags: TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	Point: { tok: Token.POINT, flags: TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
 	
 	// Conversions
-	Polar: { tok: Token.POLAR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
-	Pol: { tok: Token.POLAR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
-	Cartesian: { tok: Token.CARTESIAN, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
-	Cart: { tok: Token.CARTESIAN, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
+	Polar: { tok: Token.POLAR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	Pol: { tok: Token.POLAR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	Cartesian: { tok: Token.CARTESIAN, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	Cart: { tok: Token.CARTESIAN, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
 
 	// Time
 	t: { tok: Token.TIME, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },

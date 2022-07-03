@@ -1,3 +1,4 @@
+import { loadPlots } from '../core/controller'
 import { stringToHTML } from '../utils'
 
 const menuBar: HTMLElement | any = document.getElementById('menu-bar')
@@ -18,5 +19,14 @@ export const initMenuBar = function (): void {
 				window.open(href, '_blank')
 			})
 		}
+	})
+
+	const demoButton: HTMLButtonElement = document.querySelector('.demo-button') as HTMLButtonElement
+	demoButton.addEventListener('click', () => {
+		fetch('assets/demo/demo1.json').then((response: Response) => {
+			return response.json()
+		}).then((data: any) => {
+			loadPlots(data?.plots || [])
+		})
 	})
 }

@@ -97,18 +97,18 @@ float point(float x, float y, float d, float dx, float dy) {
 }
 
 // Conversions
-// To bol
-bool tob(float x) {
+// Float to bool
+bool ftob(float x) {
 	return x > 0.0;
 }
 
-// To float
-float tof(bool x) {
+// Bool to float
+float btof(bool x) {
 	return x ? 1.0 : 0.0;
 }
 
-vec3 randomColor(float idx){
-	return vec3(random(idx), random(idx + 1.), random(idx + 2.));
+vec3 randomColorGrayscale(float idx){
+	return vec3(random(idx), random(idx), random(idx));
 }
 
 vec2 toPol(float x, float y) {
@@ -121,7 +121,7 @@ vec2 toCart(float r, float theta) {
 
 float level = 1.0;
 vec3 levelset(float f) {
-	vec3 color = randomColor(floor(f * level));
+	vec3 color = randomColorGrayscale(floor(f * level));
 	return color;
 }
 
@@ -136,26 +136,26 @@ float f_x(int i, float x, float y, float t, float d, float mx, float my) {
 void main() {
 	vec2 coordNorm = gl_FragCoord.xy / u_resolution;
 	vec2 mouseNorm = u_mouse / u_resolution;
-	vec3 color = vec3(0.1, 0.5, 0.9);
 	float f;
 	float t = u_time;
 	float x = coordNorm.x * (u_domain_x[1] - u_domain_x[0]) + u_domain_x[0];
 	float y = coordNorm.y * (u_domain_y[1] - u_domain_y[0]) + u_domain_y[0];
 	float d = u_deviation * (u_domain_y[1] - u_domain_y[0]) / 10.0;
 	float mx = mouseNorm.x * (u_domain_x[1] - u_domain_x[0]) + u_domain_x[0];
-	// Mouse y is reversed
 	float my = (1.0 - mouseNorm.y) * (u_domain_y[1] - u_domain_y[0]) + u_domain_y[0];
 
 	int display_modes[] = USER_DISP;
 
 	for (int i = 0; i < NUM_USER_FX - 1; i++) {
+		vec3 color = USER_COL[i];
+
 		if (display_modes[i] == DISPLAY_MODE_SET) {
 			d = u_deviation * (u_domain_x[1] - u_domain_x[0]) / 8.0;
-			f = min(f_x(i, x, y, t, d, mx, my), 1.0);
+			f = max(min(f_x(i, x, y, t, d, mx, my), 1.0), 0.0);
 			fragColor += vec4(f * color, f);
 		} else if (display_modes[i] == DISPLAY_MODE_LEVEL_SET) {
 			f = f_x(i, x, y, t, d, mx, my);
-			vec3 l = levelset(f);
+			vec3 l = max(levelset(f), 0.2);
 			fragColor += vec4(l * color, 1.0);
 		} else {
 			fragColor = vec4(1.0, 0.0, 0.0, 1.0);

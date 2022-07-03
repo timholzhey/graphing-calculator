@@ -6,6 +6,7 @@ import { onMouseDrag } from './userInteract'
 
 const inputsElt: HTMLElement | any = document.querySelector('.inputs')
 const resizeArea: HTMLElement | any = document.querySelector('.resize-left-panel')
+const leftPanel: HTMLElement | any = document.getElementById('left-panel')
 
 let currentInputIndex = 0
 let numInputs = 0
@@ -151,6 +152,26 @@ export const addNewInput = function (): void {
 	inputsElt.appendChild(elt)
 }
 
+export const addNewInputWithValue = function (value: string): void {
+	addNewInput()
+	setInputAt(currentInputIndex, value)
+	const eltInput: HTMLInputElement | any = inputsElt.querySelector(`.input[data-input-idx="${currentInputIndex}"] input`)
+	if (eltInput) {
+		eltInput.value = value
+	}
+}
+
+export const resetInputs = function (): void {
+	const inputs = inputsElt.querySelectorAll('.input')
+	for (let i = 0; i < inputs.length; i++) {
+		inputs[i].remove()
+	}
+	numInputs = 0
+	setNumInputs(numInputs)
+	currentInputIndex = 0
+	resetPlots()
+}
+
 const getInputFromIndex = function (idx: number): HTMLInputElement | null {
 	return inputsElt.querySelector(`.input[data-input-idx="${idx}"]`)
 }
@@ -227,4 +248,8 @@ const activateInput = function (elt: HTMLElement): void {
 		elt.classList.remove('active')
 	})
 	elt.classList.add('active')
+}
+
+export const getLeftPanelWidth = function (): number {
+	return leftPanel.offsetWidth
 }

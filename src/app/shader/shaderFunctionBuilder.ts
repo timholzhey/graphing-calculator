@@ -1,48 +1,39 @@
 import { getGlobalTime, scheduleRedraw } from '../../index'
 import { getExternVariable, getUserVariable, setUserVariable, Token } from '../lang/lexer'
 import { ASTNode } from '../lang/parser'
-import { getMousePos } from '../ui/userInteract'
-import { factorial, perlin2, sigmoid } from '../utils'
 
 let latestError: string | null = null
-let x: number | null
+export const shaderFunctionBuilderGetError = (): string | null => latestError
 
-export const constantEval = function (ast: ASTNode | null): number {
-    if (!ast) return 0
+export const buildShaderFunction = (ast: ASTNode | null): string | null => {
+    if (!ast) return null
 
     latestError = null
 
-    const result: number = evalNode(ast) as number
+    const result: string | null = evalNode(ast)
 
     return result
 }
 
-export const constantEvalX = function (ast: ASTNode | null, _x: number): number {
-    x = _x
-
-    const result = constantEval(ast)
-
-    x = null
-    return result
-}
-
-const reportError = function (error: string): number {
+const reportError = function (error: string): null {
     console.error('Error during constant evaluation: ' + error)
     latestError = error
-    return 0
+    return null
 }
 
-export const constantEvalGetError = (): string | null => latestError
+const numToFloatString = function (num: number): string {
+    return num.toString().indexOf('.') === -1 ? num.toString() + '.0' : num.toString()
+}
 
 const isIterable = (obj: any): boolean => obj != null && typeof obj[Symbol.iterator] === 'function'
 
-const evalNode = function (node: ASTNode): number | number[] {
+const evalNode = function (node: ASTNode): string | null {
     switch (node.op.tok) {
         case Token.UNDEF:
             return reportError('Token UNDEFINED is not allowed')
         
         case Token.NONE:
-            return 0
+            return null
         
         case Token.PAREN_OP:
             return reportError('Token OPEN PARENTHESIS is not allowed')
@@ -66,116 +57,113 @@ const evalNode = function (node: ASTNode): number | number[] {
             if (typeof node.op.val !== 'number') {
                 return reportError('Token NUMBER must be a number')
             }
-            return node.op.val
+            return numToFloatString(node.op.val)
         
         case Token.CONST:
             if (typeof node.op.val !== 'number') {
                 return reportError('Token CONSTANT must be a number')
             }
-            return node.op.val
+            return numToFloatString(node.op.val)
         
         case Token.VAR:
-            if (x == null) {
-                return reportError('Token VARIABLE is not defined')
-            }
-            return x
+            return 'x'
         
         case Token.VAR2:
-            return reportError('Token VARIABLE2 is not allowed')
+            return 'y'
 
         case Token.TIME:
             scheduleRedraw()
-            return getGlobalTime()
+            return 't'
 
         case Token.ADD:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token ADDITION')
             }
-            return (evalNode(node.left) as number) + (evalNode(node.right) as number)
+            return `(${evalNode(node.left)}+${evalNode(node.right)})`
 
         case Token.SUB:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token SUBTRACTION')
             }
-            return (evalNode(node.left) as number) - (evalNode(node.right) as number)
+            return `(${evalNode(node.left)}-${evalNode(node.right)})`
 
         case Token.MULT:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token MULTIPLICATION')
             }
-            return (evalNode(node.left) as number) * (evalNode(node.right) as number)
+            return `(${evalNode(node.left)}*${evalNode(node.right)})`
 
         case Token.DIV:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token DIVISION')
             }
-            return (evalNode(node.left) as number) / (evalNode(node.right) as number)
+            return `(${evalNode(node.left)}/${evalNode(node.right)})`
 
         case Token.POW:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token POWER')
             }
-            return Math.pow(evalNode(node.left) as number, evalNode(node.right) as number)
+            return `pow(${evalNode(node.left)},${evalNode(node.right)})`
 
         case Token.SQRT:
             if (node.right == null) {
                 return reportError('Missing argument for Token SQUARE ROOT')
             }
-            return Math.sqrt(evalNode(node.right) as number)
+            return `sqrt(${evalNode(node.right)})`
 
         case Token.LOG:
             if (node.right == null) {
                 return reportError('Missing argument for Token LOGARITHM')
             }
-            return Math.log(evalNode(node.right) as number)
+            return `log(${evalNode(node.right)})`
 
         case Token.EXP:
             if (node.right == null) {
                 return reportError('Missing argument for Token EXPOENTIAL')
             }
-            return Math.exp(evalNode(node.right) as number)
+            return `exp(${evalNode(node.right)})`
 
         case Token.SIN:
             if (node.right == null) {
                 return reportError('Missing argument for Token SINE')
             }
-            return Math.sin(evalNode(node.right) as number)
+            return `sin(${evalNode(node.right)})`
 
         case Token.COS:
             if (node.right == null) {
                 return reportError('Missing argument for Token COSINE')
             }
-            return Math.cos(evalNode(node.right) as number)
+            return `cos(${evalNode(node.right)})`
 
         case Token.TAN:
             if (node.right == null) {
                 return reportError('Missing argument for Token TANGENT')
             }
-            return Math.tan(evalNode(node.right) as number)
+            return `tan(${evalNode(node.right)})`
 
         case Token.ASIN:
             if (node.right == null) {
                 return reportError('Missing argument for Token ARC SINE')
             }
-            return Math.asin(evalNode(node.right) as number)
+            return `asin(${evalNode(node.right)})`
 
         case Token.ACOS:
             if (node.right == null) {
                 return reportError('Missing argument for Token ARC COSINE')
             }
-            return Math.acos(evalNode(node.right) as number)
+            return `acos(${evalNode(node.right)})`
 
         case Token.ATAN:
             if (node.right == null) {
                 return reportError('Missing argument for Token ARC TANGENT')
             }
-            return Math.atan(evalNode(node.right) as number)
+            return `atan(${evalNode(node.right)})`
 
         case Token.FLOOR:
             if (node.right == null) {
                 return reportError('Missing argument for Token FLOOR')
             }
-            return Math.floor(evalNode(node.right) as number)
+            return `floor(${evalNode(node.right)})`
 
         case Token.MIN:
             if (node.right == null) {
@@ -184,7 +172,7 @@ const evalNode = function (node: ASTNode): number | number[] {
             if (!isIterable(evalNode(node.right))) {
                 return reportError('Malformed argument for Token MIN')
             }
-            return Math.min(...evalNode(node.right) as number[])
+            return `min(${evalNode(node.right)})`
 
         case Token.MAX:
             if (node.right == null) {
@@ -193,25 +181,25 @@ const evalNode = function (node: ASTNode): number | number[] {
             if (!isIterable(evalNode(node.right))) {
                 return reportError('Malformed argument for Token MAX')
             }
-            return Math.max(...evalNode(node.right) as number[])
+            return `max(${evalNode(node.right)})`
 
         case Token.DELIM:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token DELIMITER')
             }
-            return [evalNode(node.left) as number, evalNode(node.right) as number]
+            return `${evalNode(node.left)},${evalNode(node.right)}`
 
         case Token.ABS:
             if (node.right == null) {
                 return reportError('Missing argument for Token ABSOLUTE')
             }
-            return Math.abs(evalNode(node.right) as number)
+            return `abs(${evalNode(node.right)})`
 
         case Token.RAND:
             if (node.right == null) {
                 return reportError('Missing argument for Token RANDOM')
             }
-            return Math.random() * (evalNode(node.right) as number)
+            return `random(${evalNode(node.right)})`
 
         case Token.PERLIN: {
             if (node.right == null) {
@@ -220,18 +208,26 @@ const evalNode = function (node: ASTNode): number | number[] {
             if (!isIterable(evalNode(node.right))) {
                 return reportError('Malformed argument for Token PERLIN')
             }
-            const [x, y] = evalNode(node.right) as number[]
-            return perlin2(x, y)
+            return `noise(vec2(${evalNode(node.right)}))`
         }
 
         case Token.MOD:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token MODULUS')
             }
-            return (evalNode(node.left) as number) % (evalNode(node.right) as number)
+            return `mod(${evalNode(node.left)},${evalNode(node.right)})`
         
         case Token.LEVEL_SET:
-            return reportError('Token LEVEL SET is not allowed')
+            if (node.right == null) {
+                return reportError('Missing argument for Token LEVEL SET')
+            }
+            if (node.right.op.tok === Token.DELIM) {
+                if (node.right.left == null || node.right.right == null) {
+                    return reportError('Missing arguments for Token LEVEL SET')
+                }
+                return `${evalNode(node.right.left)}+((level=${evalNode(node.right.right)})>0.0?0.0:0.0)`
+            }
+            return evalNode(node.right)
         
         case Token.VECTOR_FIELD:
             return reportError('Token VECTOR FIELD is not allowed')
@@ -240,85 +236,97 @@ const evalNode = function (node: ASTNode): number | number[] {
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token LESS THAN')
             }
-            return (evalNode(node.left) as number) < (evalNode(node.right) as number) ? 1 : 0
+            return `btof(${evalNode(node.left)}<${evalNode(node.right)})`
 
         case Token.GREATER:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token GREATER THAN')
             }
-            return (evalNode(node.left) as number) > (evalNode(node.right) as number) ? 1 : 0
+            return `btof(${evalNode(node.left)}>${evalNode(node.right)})`
 
         case Token.LESS_OR_EQUAL:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token LESS THAN OR EQUAL TO')
             }
-            return (evalNode(node.left) as number) <= (evalNode(node.right) as number) ? 1 : 0
+            return `btof(${evalNode(node.left)}<=${evalNode(node.right)})`
 
         case Token.GREATER_OR_EQUAL:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token GREATER THAN OR EQUAL TO')
             }
-            return (evalNode(node.left) as number) >= (evalNode(node.right) as number) ? 1 : 0
+            return `btof(${evalNode(node.left)}>=${evalNode(node.right)})`
 
         case Token.EQUAL:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token EQUAL TO')
             }
-            return (evalNode(node.left) as number) - (evalNode(node.right) as number) < 0.00001 ? 1 : 0
+            return `btof(${evalNode(node.left)}==${evalNode(node.right)})`
         
         case Token.AND:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token AND')
             }
-            return (evalNode(node.left) as number) && (evalNode(node.right) as number) ? 1 : 0
+            return `btof(ftob(${evalNode(node.left)})&&ftob(${evalNode(node.right)}))`
 
         case Token.OR:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token OR')
             }
-            return (evalNode(node.left) as number) || (evalNode(node.right) as number) ? 1 : 0
+            return `btof(ftob(${evalNode(node.left)})||ftob(${evalNode(node.right)}))`
         
         case Token.USERVAR:
-            return getUserVariable(node.op.val as string)
+            return `btof(${getUserVariable(node.op.val as string)})`
         
         case Token.FACTORIAL:
             if (node.right == null) {
                 return reportError('Missing argument for Token FACTORIAL')
             }
-            return factorial(evalNode(node.right) as number)
+            return `factorial(${evalNode(node.right)})`
 
         case Token.SIGMOID:
             if (node.right == null) {
                 return reportError('Missing argument for Token SIGMOID')
             }
-            return sigmoid(evalNode(node.right) as number)
+            return `(1.0/(1.0+exp(-(${evalNode(node.right)}))))`
 
         case Token.CIRCLE:
-            return reportError('Token CIRCLE is not allowed')
+            if (node.right == null) {
+                return reportError('Missing argument for Token CIRCLE')
+            }
+            return `circle(x,y,d,${evalNode(node.right)})`
 
         case Token.POINT:
-            return reportError('Token POINT is not allowed')
+            if (node.right == null) {
+                return reportError('Missing argument for Token POINT')
+            }
+            return `point(x,y,d,${evalNode(node.right)})`
 
         case Token.TRUE:
-            return 1
+            return 'btof(true)'
 
         case Token.FALSE:
-            return 0
+            return 'btof(false)'
 
         case Token.POLAR:
-            return reportError('Token POLAR is not allowed')
+            if (node.right == null) {
+                return reportError('Missing argument for Token POLAR')
+            }
+            return `(POLAR+${evalNode(node.right)})`
         
         case Token.CARTESIAN:
-            return reportError('Token CARTESIAN is not allowed')
+            if (node.right == null) {
+                return reportError('Missing argument for Token CARTESIAN')
+            }
+            return `(CARTESIAN+${evalNode(node.right)})`
         
         case Token.MOUSEX:
-            return getMousePos().x
+            return 'mx'
         
         case Token.MOUSEY:
-            return getMousePos().y
+            return 'my'
 
         case Token.MOUSE:
-            return [getMousePos().x, getMousePos().y]
+            return reportError('Token MOUSE is not allowed')
 
         case Token.ASSIGN:
             if (node.left == null || node.right == null) {
@@ -326,15 +334,15 @@ const evalNode = function (node: ASTNode): number | number[] {
             }
             if (node.left.op.tok !== Token.ASSIGNABLE) {
                 if (node.left.op.tok === Token.USERVAR) {
-                    setUserVariable(node.left.op.val as string, evalNode(node.right) as number)
+                    setUserVariable(node.left.op.val as string, parseFloat(evalNode(node.right) as string))
                     return evalNode(node.right)
                 }
-                return reportError('Left side of ASSIGN must be assignable')
+                return `btof(abs(${evalNode(node.left)}-${evalNode(node.right)})<d)`
             }
             if (getExternVariable(node.left.op.val as string) == null) {
                 return reportError(`Variable ${node.left.op.val} does not exist`)
             }
-            getExternVariable(node.left.op.val as string)?.set(evalNode(node.right) as number)
+            getExternVariable(node.left.op.val as string)?.set(parseFloat(evalNode(node.right) as string))
             return evalNode(node.right)
         
         default:

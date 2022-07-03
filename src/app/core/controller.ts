@@ -2,9 +2,9 @@ import { scheduleRedraw } from '../../index'
 import { canvasDrawFunction } from '../canvas/canvasCore'
 import { PlotDisplayMode, PlotDriver, PlotStatus } from '../defines'
 import { Error } from '../lang/lexer'
-import { ASTNode, parse, parserGetDisplayMode, parserGetError, parserGetNumVars } from '../lang/parser'
-import { buildShaderFunction } from '../shader/shaderFunction'
-import { inputSetColorAt, inputSetConstEvalAt, inputSetDriverAt, inputSetErrorAt, inputSetStatusAt } from '../ui/leftPanel'
+import { ASTNode, parse, parserGetContinuous, parserGetDisplayMode, parserGetDriver, parserGetError } from '../lang/parser'
+import { buildShaderFunction, shaderFunctionBuilderGetError } from '../shader/shaderFunctionBuilder'
+import { addNewInputWithValue, inputSetColorAt, inputSetConstEvalAt, inputSetDriverAt, inputSetErrorAt, inputSetStatusAt, resetInputs } from '../ui/leftPanel'
 import { constantEval, constantEvalGetError } from './constantEval'
 
 type Plot = {
@@ -15,6 +15,7 @@ type Plot = {
     driver: PlotDriver,
     displayMode: PlotDisplayMode,
     shaderFunction: string,
+    continuous: boolean,
     color: string,
     error: string,
 }
@@ -25,6 +26,11 @@ let numInputs = 0
 export const setInputAt = (index: number, value: string): void => {
     if (index < 0 || index > numInputs) {
         return
+    }
+
+    if (!plots[index]) {
+        plots[index] = initPlot(index)
+        inputSetColorAt(index, plots[index].color)
     }
 
     plots[index].input = value
@@ -46,23 +52,37 @@ export const resetPlots = (): void => {
 }
 
 const colors: string[] = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-const getColorFromIndex = (index: number): string => colors[index % colors.length]
+const getColorFromIndex = (index: number): string => colors[(index - 1) % colors.length]
+
+export const loadPlots = function (plots: string[]) {
+    resetInputs()
+
+    setNumInputs(plots.length)
+    for (let i = 0; i < plots.length; i++) {
+        addNewInputWithValue(plots[i])
+    }
+}
+
+const initPlot = function (idx: number) {
+    return {
+        input: '',
+        inputChanged: false,
+        ast: null,
+        status: PlotStatus.PENDING,
+        driver: PlotDriver.CANVAS,
+        displayMode: PlotDisplayMode.NONE,
+        shaderFunction: '',
+        continuous: false,
+        color: getColorFromIndex(idx),
+        error: ''
+    }
+}
 
 export const drivePlots = (): void => {
     for (let i = 1; i <= numInputs; i++) {
         // Init plot
         if (!plots[i]) {
-            plots[i] = {
-                input: '',
-                inputChanged: false,
-                ast: null,
-                status: PlotStatus.PENDING,
-                driver: PlotDriver.CANVAS,
-                displayMode: PlotDisplayMode.NONE,
-                shaderFunction: '',
-                color: getColorFromIndex(i),
-                error: ''
-            }
+            plots[i] = initPlot(i)
             inputSetColorAt(i, plots[i].color)
         }
         
@@ -99,12 +119,6 @@ export const drivePlots = (): void => {
                 plot.status = PlotStatus.ACTIVE
                 plot.error = ''
             }
-            if (plot.status !== statusBefore) {
-                inputSetStatusAt(i, plot.status)
-            }
-            if (plot.error !== errorBefore) {
-                inputSetErrorAt(i, plot.error)
-            }
 
             // Redraw
             if (JSON.stringify(astBefore) !== JSON.stringify(plot.ast)) {
@@ -112,15 +126,10 @@ export const drivePlots = (): void => {
             }
 
             // Check driver
-            const numVars = parserGetNumVars()
-            const driverBefore = plot.driver
-            switch (numVars) {
-                case 0: plot.driver = PlotDriver.CONSTANT; break
-                case 1: plot.driver = PlotDriver.CANVAS; break
-                case 2: plot.driver = PlotDriver.WEBGL; break
-            }
-            if (plot.driver !== driverBefore) {
-                inputSetDriverAt(i, plot.driver)
+            const driver = parserGetDriver()
+            if (plot.driver !== driver) {
+                plot.driver = driver
+                inputSetDriverAt(i, driver)
             }
 
             // Check process mode
@@ -128,7 +137,23 @@ export const drivePlots = (): void => {
 
             // Build shader function
             if (plot.driver === PlotDriver.WEBGL) {
-                plot.shaderFunction = buildShaderFunction(plot.ast)
+                plot.shaderFunction = buildShaderFunction(plot.ast) || 'undefined'
+                const shaderFunctionError = shaderFunctionBuilderGetError()
+                if (shaderFunctionError) {
+                    plot.status = PlotStatus.ERROR
+                    plot.error = shaderFunctionError
+                }
+            }
+
+            // Check continuous rendering
+            plot.continuous = parserGetContinuous()
+
+            // Update
+            if (plot.status !== statusBefore) {
+                inputSetStatusAt(i, plot.status)
+            }
+            if (plot.error !== errorBefore) {
+                inputSetErrorAt(i, plot.error)
             }
         }
     }
@@ -171,6 +196,10 @@ export const drawPlots = (): void => {
 
             case PlotDriver.WEBGL:
                 break
+        }
+
+        if (plot.continuous) {
+            scheduleRedraw()
         }
     }
 }

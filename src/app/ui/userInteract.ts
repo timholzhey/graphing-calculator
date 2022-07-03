@@ -1,4 +1,5 @@
 import { Vector } from '../utils'
+import { getLeftPanelWidth } from './leftPanel'
 
 let mouseClaimed = false
 let mouseDown = false

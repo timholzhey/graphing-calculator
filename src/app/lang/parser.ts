@@ -1,4 +1,4 @@
-import { PlotDisplayMode } from '../defines'
+import { PlotDisplayMode, PlotDriver } from '../defines'
 import { Token, TokenFlag, OpCode, Error, lex, lexerGetError } from './lexer'
 
 const MAX_PRECEDENCE = 8
@@ -27,23 +27,25 @@ export type ASTNode = {
 	right: ASTNode | null
 }
 
-let latestError: Error | null = null
-export const parserGetError = (): Error | null => latestError
-
 const reportError = (error: string, position: number) => {
 	console.error(`Error at position ${position}: ${error}`)
 	latestError = { desc: error, pos: position }
 }
 
-let numVars = 0
+let latestError: Error | null = null
+let continuous = false
+let driver: PlotDriver = PlotDriver.CONSTANT
 let displayMode: PlotDisplayMode = PlotDisplayMode.NONE
 
-export const parserGetNumVars = (): number => numVars
+export const parserGetError = (): Error | null => latestError
+export const parserGetContinuous = (): boolean => continuous
+export const parserGetDriver = (): PlotDriver => driver
 export const parserGetDisplayMode = (): PlotDisplayMode => displayMode
 
 export const parse = (input: string): ASTNode | null => {
 	latestError = null
-	numVars = 0
+	continuous = false
+	driver = PlotDriver.CONSTANT
 	displayMode = PlotDisplayMode.NONE
 
 	let ops: OpCode[] | null = lex(input)
@@ -55,21 +57,28 @@ export const parse = (input: string): ASTNode | null => {
 		return null
 	}
 
-	numVars = (ops.filter(op => op.tok === Token.VAR).length > 0 ? 1 : 0) +
+	const numVars = (ops.filter(op => op.tok === Token.VAR).length > 0 ? 1 : 0) +
 		(ops.filter(op => op.tok === Token.VAR2).length > 0 ? 1 : 0)
-	
-	if (numVars === 0) {
-		displayMode = PlotDisplayMode.CONSTANT_EVAL
-	} else if (numVars === 1) {
-		displayMode = PlotDisplayMode.FUNCTION_GRAPH
-	} else if (numVars === 2) {
+
+	if (ops.filter(op => op.flags & TokenFlag.WEBGL_ONLY).length > 0) {
+		driver = PlotDriver.WEBGL
 		displayMode = PlotDisplayMode.SET
 		if (ops.filter(op => op.tok === Token.LEVEL_SET).length > 0) {
 			displayMode = PlotDisplayMode.LEVEL_SET
 		} else if (ops.filter(op => op.tok === Token.VECTOR_FIELD).length > 0) {
 			displayMode = PlotDisplayMode.VECTOR_FIELD
 		}
+	} else if (numVars === 0) {
+		driver = PlotDriver.CONSTANT
+		displayMode = PlotDisplayMode.CONSTANT_EVAL
+	} else if (numVars === 1) {
+		driver = PlotDriver.CANVAS
+		displayMode = PlotDisplayMode.FUNCTION_GRAPH
 	}
+
+	continuous = ops.filter(op => op.tok === Token.TIME).length > 0 ||
+		ops.filter(op => op.tok === Token.MOUSEX).length > 0 ||
+		ops.filter(op => op.tok === Token.MOUSEY).length > 0
 
 	ops = validate(ops)
 	console.debug('Validated ops:', ops)

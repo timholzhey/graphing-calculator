@@ -284,6 +284,8 @@ body {
     border: none;
     outline: none;
     cursor: pointer;
+    color: var(--color-text-light);
+    font-size: large;
 }
 
 .menu-bar-title {
