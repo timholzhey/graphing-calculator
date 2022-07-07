@@ -158,6 +158,24 @@ const evalNode = function (node: ASTNode): string | null {
                 return reportError('Missing argument for Token ARC TANGENT')
             }
             return `atan(${evalNode(node.right)})`
+        
+        case Token.SINH:
+            if (node.right == null) {
+                return reportError('Missing argument for Token SINE HYPERBOLICUS')
+            }
+            return `sinh(${evalNode(node.right)})`
+
+        case Token.COSH:
+            if (node.right == null) {
+                return reportError('Missing argument for Token COSINE HYPERBOLICUS')
+            }
+            return `cosh(${evalNode(node.right)})`
+
+        case Token.TANH:
+            if (node.right == null) {
+                return reportError('Missing argument for Token TANGENT HYPERBOLICUS')
+            }
+            return `tanh(${evalNode(node.right)})`
 
         case Token.FLOOR:
             if (node.right == null) {

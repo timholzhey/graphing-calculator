@@ -158,6 +158,24 @@ const evalNode = function (node: ASTNode): number | number[] {
                 return reportError('Missing argument for Token ARC SINE')
             }
             return Math.asin(evalNode(node.right) as number)
+        
+        case Token.SINH:
+            if (node.right == null) {
+                return reportError('Missing argument for Token SINE HYPERBOLICUS')
+            }
+            return Math.sinh(evalNode(node.right) as number)
+        
+        case Token.COSH:
+            if (node.right == null) {
+                return reportError('Missing argument for Token COSINE HYPERBOLICUS')
+            }
+            return Math.cosh(evalNode(node.right) as number)
+
+        case Token.TANH:
+            if (node.right == null) {
+                return reportError('Missing argument for Token TANGENT HYPERBOLICUS')
+            }
+            return Math.tanh(evalNode(node.right) as number)
 
         case Token.ACOS:
             if (node.right == null) {
