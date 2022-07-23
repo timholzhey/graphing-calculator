@@ -19,6 +19,20 @@ export class Vector {
 	}
 }
 
+export type Complex = {
+    re: number
+    im: number
+}
+
+export const complexToString = function (c: Complex): string {
+	// round components to 6 decimal places
+	const re = Math.round(c.re * 1000000) / 1000000
+	const im = Math.round(c.im * 1000000) / 1000000
+	return im === 0 ? re.toString() : (re + ' + ' + im + 'i')
+}
+
+export const cpx = (num: number) => ({ re: num, im: 0 })
+
 // Perlin noise from https://github.com/josephg/noisejs/blob/master/perlin.js
 const perm = new Array(512)
 const gradP = new Array(512)

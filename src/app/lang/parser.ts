@@ -57,6 +57,14 @@ export const parse = (input: string): ASTNode | null => {
 		return null
 	}
 
+	ops = validate(ops)
+	console.debug('Validated ops:', ops)
+	if (ops == null) return null
+	
+	ops = expand(ops)
+	console.debug('Expanded ops:', ops)
+	if (ops == null) return null
+	
 	const numVars = (ops.filter(op => op.tok === Token.VAR).length > 0 ? 1 : 0) +
 		(ops.filter(op => op.tok === Token.VAR2).length > 0 ? 1 : 0)
 
@@ -67,6 +75,8 @@ export const parse = (input: string): ASTNode | null => {
 			displayMode = PlotDisplayMode.LEVEL_SET
 		} else if (ops.filter(op => op.tok === Token.VECTOR_FIELD).length > 0) {
 			displayMode = PlotDisplayMode.VECTOR_FIELD
+		} else if (ops.filter(op => op.tok === Token.GRADIENT).length > 0) {
+			displayMode = PlotDisplayMode.GRADIENT
 		}
 	} else if (numVars === 0) {
 		driver = PlotDriver.CONSTANT
@@ -79,14 +89,6 @@ export const parse = (input: string): ASTNode | null => {
 	continuous = ops.filter(op => op.tok === Token.TIME).length > 0 ||
 		ops.filter(op => op.tok === Token.MOUSEX).length > 0 ||
 		ops.filter(op => op.tok === Token.MOUSEY).length > 0
-
-	ops = validate(ops)
-	console.debug('Validated ops:', ops)
-	if (ops == null) return null
-	
-	ops = expand(ops)
-	console.debug('Expanded ops:', ops)
-	if (ops == null) return null
 	
 	ops = optimize(ops)
 	console.debug('Optimized ops:', ops)
@@ -158,7 +160,7 @@ const expand = (ops: OpCode[]): OpCode[] | null => {
 		}
 	}
 
-	// Replace mouse with mouseX, delim, mouseY
+	// Replace mouse with mouseX, delim, mouseY and z with x + y * i
 	for (let i = 0; i < ops.length; i++) {
 		if (ops[i].tok === Token.MOUSE) {
 			ops.splice(i, 1,
@@ -167,6 +169,16 @@ const expand = (ops: OpCode[]): OpCode[] | null => {
 				{ tok: Token.MOUSEY, val: 0, flags: TokenFlag.IMPL_MULT_BEFORE }
 			)
 			i += 2
+		} else if (ops[i].tok === Token.COMPLEX) {
+			ops.splice(i, 1,
+				{ tok: Token.PAREN_OP, val: 0, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.BEGIN_SCOPE },
+				{ tok: Token.VAR, val: 0, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+				{ tok: Token.ADD, val: 0, flags: 0 },
+				{ tok: Token.VAR2, val: 0, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER | TokenFlag.WEBGL_ONLY },
+				{ tok: Token.IMAGINARY, val: 0, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+				{ tok: Token.PAREN_CL, val: 0, flags: TokenFlag.IMPL_MULT_AFTER | TokenFlag.END_SCOPE }
+			)
+			i += 5
 		}
 	}
 

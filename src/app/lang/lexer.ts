@@ -56,12 +56,17 @@ export enum Token {
 	CIRCLE,
 	POINT,
 	TIME,
-	COMPLEX,
+	MAGNITUDE,
+	IMAGINARY,
 	POLAR,
 	CARTESIAN,
 	MOUSEX,
 	MOUSEY,
-	MOUSE
+	MOUSE,
+	SERIES,
+	ITERATOR,
+	COMPLEX,
+	GRADIENT,
 }
 
 export enum TokenFlag {
@@ -173,7 +178,16 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	// Inputs
 	mouseX: { tok: Token.MOUSEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	mouseY: { tok: Token.MOUSEY, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
-	mouse: { tok: Token.MOUSE, flags: 0 }
+	mouse: { tok: Token.MOUSE, flags: 0 },
+
+	// Complex
+	i: { tok: Token.IMAGINARY, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+
+	Series: { tok: Token.SERIES, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	k: { tok: Token.ITERATOR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+	z: { tok: Token.COMPLEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+	Mag: { tok: Token.MAGNITUDE, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
+	Gradient: { tok: Token.GRADIENT, flags: TokenFlag.PREFIX }
 }
 
 const StringConstantMap: { [key: string]: number } = {

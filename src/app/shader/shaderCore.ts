@@ -121,21 +121,24 @@ const hexColorToNormalRGBString = function (hex: string): string {
 }
 
 function injectFunctionsIntoShaderSource (shader: string): string {
-	const plots: { functions: string[], colors: string[], displayModes: PlotDisplayMode[], numPlots: number } = getPlotsShaderInfo()
+	const plots: { functions: string[], colors: string[], displayModes: PlotDisplayMode[], numPlots: number, iterExpr: string[] } = getPlotsShaderInfo()
 	
 	if (plots.numPlots === 0) {
 		plots.functions = []
 		plots.colors = ['#000000']
 		plots.displayModes = [PlotDisplayMode.NONE]
+		plots.iterExpr = []
 	}
 
 	plots.functions.push('0.0')
+	plots.iterExpr.push('vec2(0.0,0.0)')
 
 	return shader
 		.replace(/USER_NUM_FUNC_INJ/g, `${plots.numPlots + 1}`)
 		.replace(/USER_FUNC_INJ/g, `float[](${plots.functions.map(f => `(${f})`).join(',')})`)
 		.replace(/USER_COL_INJ/g, `vec3[](${plots.colors.map(c => `vec3(${hexColorToNormalRGBString(c)})`).join(',')})`)
 		.replace(/USER_DISP_INJ/g, `int[](${plots.displayModes.map(d => `${d}`).join(',')})`)
+		.replace(/USER_ITER_EXPR_INJ/g, `vec2[](${plots.iterExpr.map(e => `(${e.length > 0 ? e : 'vec2(0.0,0.0)'})`).join(',')})`)
 }
 
 function initShaders (vertSrc: string, fragSrc: string) {

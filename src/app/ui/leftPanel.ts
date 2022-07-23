@@ -1,7 +1,7 @@
 import { scheduleRedraw } from '../../index'
 import { resetPlots, setInputAt, setNumInputs } from '../core/controller'
 import { PlotDriver, PlotStatus } from '../defines'
-import { stringToHTML, Vector } from '../utils'
+import { Complex, complexToString, stringToHTML, Vector } from '../utils'
 import { onMouseDrag } from './userInteract'
 
 const inputsElt: HTMLElement | any = document.querySelector('.inputs')
@@ -190,14 +190,14 @@ export const inputSetErrorAt = function (idx: number, error: string) {
 	indicator.setAttribute('data-error', error)
 }
 
-export const inputSetConstEvalAt = function (idx: number, constEval: number) {
+export const inputSetConstEvalAt = function (idx: number, constEval: Complex | number) {
 	const elt = getInputFromIndex(idx)
 	if (!elt) return
 
 	const constEvalElt: HTMLElement | null = elt.querySelector('.const-eval')
 	if (!constEvalElt) return
 
-	constEvalElt.innerText = '= ' + constEval.toString()
+	constEvalElt.innerText = '= ' + typeof constEval === 'number' ? constEval.toString() : complexToString(constEval as Complex)
 	constEvalElt.classList.add('visible')
 }
 

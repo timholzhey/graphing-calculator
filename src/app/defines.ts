@@ -4,7 +4,8 @@ export enum PlotDisplayMode {
     FUNCTION_GRAPH,
     SET,
     LEVEL_SET,
-    VECTOR_FIELD
+    VECTOR_FIELD,
+    GRADIENT
 }
 
 export enum PlotStatus {

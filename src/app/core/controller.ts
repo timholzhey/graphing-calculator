@@ -1,9 +1,9 @@
 import { scheduleRedraw } from '../../index'
-import { canvasDrawFunction } from '../canvas/canvasCore'
+import { canvasDrawFunction, resetCanvas } from '../canvas/canvasCore'
 import { PlotDisplayMode, PlotDriver, PlotStatus } from '../defines'
 import { Error } from '../lang/lexer'
 import { ASTNode, parse, parserGetContinuous, parserGetDisplayMode, parserGetDriver, parserGetError } from '../lang/parser'
-import { buildShaderFunction, shaderFunctionBuilderGetError } from '../shader/shaderFunctionBuilder'
+import { buildShaderFunction, shaderFunctionBuilderGetError, shaderFunctionBuilderGetIterExpression } from '../shader/shaderFunctionBuilder'
 import { addNewInputWithValue, inputSetColorAt, inputSetConstEvalAt, inputSetDriverAt, inputSetErrorAt, inputSetStatusAt, resetInputs } from '../ui/leftPanel'
 import { constantEval, constantEvalGetError } from './constantEval'
 
@@ -18,6 +18,7 @@ type Plot = {
     continuous: boolean,
     color: string,
     error: string,
+    iterExpr: string,
 }
 
 const plots: Plot[] = []
@@ -54,7 +55,17 @@ export const resetPlots = (): void => {
 const colors: string[] = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 const getColorFromIndex = (index: number): string => colors[(index - 1) % colors.length]
 
-export const loadPlots = function (plots: string[]) {
+export const loadPlots = function (plots: string[], defaults: string[]) {
+    resetCanvas()
+    resetInputs()
+
+    console.log(defaults)
+    setNumInputs(defaults.length)
+    for (let i = 0; i < defaults.length; i++) {
+        addNewInputWithValue(defaults[i])
+    }
+    drivePlots()
+    drawPlots()
     resetInputs()
 
     setNumInputs(plots.length)
@@ -74,7 +85,8 @@ const initPlot = function (idx: number) {
         shaderFunction: '',
         continuous: false,
         color: getColorFromIndex(idx),
-        error: ''
+        error: '',
+        iterExpr: '',
     }
 }
 
@@ -138,6 +150,9 @@ export const drivePlots = (): void => {
             // Build shader function
             if (plot.driver === PlotDriver.WEBGL) {
                 plot.shaderFunction = buildShaderFunction(plot.ast) || 'undefined'
+
+                plot.iterExpr = shaderFunctionBuilderGetIterExpression()
+
                 const shaderFunctionError = shaderFunctionBuilderGetError()
                 if (shaderFunctionError) {
                     plot.status = PlotStatus.ERROR
@@ -204,10 +219,12 @@ export const drawPlots = (): void => {
     }
 }
 
-export const getPlotsShaderInfo = (): { functions: string[], colors: string[], displayModes: PlotDisplayMode[], numPlots: number } => {
+export const getPlotsShaderInfo = (): { functions: string[], colors: string[], displayModes: PlotDisplayMode[], numPlots: number, iterExpr: string[] } => {
     const shaderFunctions: string[] = []
     const colors: string[] = []
     const displayModes: PlotDisplayMode[] = []
+    const iterExpr: string[] = []
+
     let numPlots = 0
 
     for (let i = 1; i <= numInputs; i++) {
@@ -220,8 +237,9 @@ export const getPlotsShaderInfo = (): { functions: string[], colors: string[], d
         shaderFunctions.push(plot.shaderFunction)
         colors.push(plot.color)
         displayModes.push(plot.displayMode)
+        iterExpr.push(plot.iterExpr)
         numPlots++
     }
 
-    return { functions: shaderFunctions, colors, displayModes, numPlots }
+    return { functions: shaderFunctions, colors, displayModes, numPlots, iterExpr }
 }

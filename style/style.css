@@ -7,6 +7,7 @@
     --color-background-input: f3eee8;
     --color-background-status: #cac8c4;
     --color-text-light: #ffffff;
+    --color-text-highlight: #72eccb;
     --color-error: #ee1e41;
     --menu-bar-height: 3em;
     --left-panel-width: clamp(25em, 25vw, 30em);
@@ -255,7 +256,7 @@ body {
 
 .menu-bar-button {
     height: 100%;
-    width: 3em;
+    min-width: 3em;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -285,7 +286,9 @@ body {
     outline: none;
     cursor: pointer;
     color: var(--color-text-light);
-    font-size: large;
+    font-size: small;
+    min-width: fit-content;
+    margin: 0.2em;
 }
 
 .menu-bar-title {
@@ -377,4 +380,24 @@ body {
 
 .zoom-out-button {
     border-left: 1px solid var(--color-background-medium);
+}
+
+.examples-list {
+    width: max-content;
+    height: 100%;
+    background-color: #b3ada899;
+    position: absolute;
+    right: 0.5em;
+    padding: 1em;
+    top: var(--menu-bar-height);
+    border-radius: 3px;
+}
+
+.hidden {
+    display: none;
+}
+
+.example-list-item:hover {
+    cursor: pointer;
+    color: var(--color-text-highlight)
 }

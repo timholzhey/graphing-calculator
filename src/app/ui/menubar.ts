@@ -22,11 +22,27 @@ export const initMenuBar = function (): void {
 	})
 
 	const demoButton: HTMLButtonElement = document.querySelector('.demo-button') as HTMLButtonElement
+	const examplesList: HTMLDivElement = document.querySelector('.examples-list') as HTMLDivElement
+	let exampleJson: any
+	let numExamples = 0
+
+	fetch('assets/demo/demo.json').then((response: Response) => {
+		return response.json()
+	}).then((data: any) => {
+		exampleJson = data
+		numExamples = data?.numPlots
+		for (let i = 0; i < numExamples; i++) {
+			let container = document.createElement('div')
+			container.innerHTML = data?.plots[i]?.name
+			container.classList.add('example-list-item')
+			container.addEventListener('click', () => {
+				loadPlots(exampleJson?.plots[i]?.inputs || '', exampleJson?.plots[i]?.defaults || '')
+			})
+			examplesList.appendChild(container)
+		}
+	})
+
 	demoButton.addEventListener('click', () => {
-		fetch('assets/demo/demo1.json').then((response: Response) => {
-			return response.json()
-		}).then((data: any) => {
-			loadPlots(data?.plots || [])
-		})
+		examplesList.classList.toggle('hidden')
 	})
 }

@@ -5,20 +5,25 @@ import { ASTNode } from '../lang/parser'
 let latestError: string | null = null
 export const shaderFunctionBuilderGetError = (): string | null => latestError
 
+let iterExpr: string = ''
+export const shaderFunctionBuilderGetIterExpression = (): string => iterExpr
+
 export const buildShaderFunction = (ast: ASTNode | null): string | null => {
     if (!ast) return null
 
     latestError = null
+    iterExpr = ''
 
-    const result: string | null = evalNode(ast)
+    const result: { val: string | null, cpx: boolean } = evalNode(ast)
+    console.debug('Shader function: ' + result.val)
 
-    return result
+    return result.val
 }
 
-const reportError = function (error: string): null {
+const reportError = function (error: string): { val: null, cpx: false } {
     console.error('Error during constant evaluation: ' + error)
     latestError = error
-    return null
+    return { val: null, cpx: false }
 }
 
 const numToFloatString = function (num: number): string {
@@ -27,13 +32,22 @@ const numToFloatString = function (num: number): string {
 
 const isIterable = (obj: any): boolean => obj != null && typeof obj[Symbol.iterator] === 'function'
 
-const evalNode = function (node: ASTNode): string | null {
+const real = (val: string): { val: string | null, cpx: false } => {
+    return { val, cpx: false }
+}
+const complex = (val: string): { val: string, cpx: true } => {
+    return { val, cpx: true }
+}
+
+const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } {
+    let left, right
+
     switch (node.op.tok) {
         case Token.UNDEF:
             return reportError('Token UNDEFINED is not allowed')
         
         case Token.NONE:
-            return null
+            return real('0')
         
         case Token.PAREN_OP:
             return reportError('Token OPEN PARENTHESIS is not allowed')
@@ -57,183 +71,264 @@ const evalNode = function (node: ASTNode): string | null {
             if (typeof node.op.val !== 'number') {
                 return reportError('Token NUMBER must be a number')
             }
-            return numToFloatString(node.op.val)
+            return real(numToFloatString(node.op.val))
         
         case Token.CONST:
             if (typeof node.op.val !== 'number') {
                 return reportError('Token CONSTANT must be a number')
             }
-            return numToFloatString(node.op.val)
+            return real(numToFloatString(node.op.val))
         
         case Token.VAR:
-            return 'x'
+            return real('x')
         
         case Token.VAR2:
-            return 'y'
+            return real('y')
 
         case Token.TIME:
             scheduleRedraw()
-            return 't'
+            return real('t')
 
         case Token.ADD:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token ADDITION')
             }
-            return `(${evalNode(node.left)}+${evalNode(node.right)})`
+            left = evalNode(node.left)
+            right = evalNode(node.right)
+            if (!left.cpx && !right.cpx) {
+                return real(`(${left.val}+${right.val})`)
+            }
+            return complex(`add(${left.val},${right.val})`)
 
         case Token.SUB:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token SUBTRACTION')
             }
-            return `(${evalNode(node.left)}-${evalNode(node.right)})`
+            left = evalNode(node.left)
+            right = evalNode(node.right)
+            if (!left.cpx && !right.cpx) {
+                return real(`(${left.val}-${right.val})`)
+            }
+            return complex(`sub(${left.val},${right.val})`)
 
         case Token.MULT:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token MULTIPLICATION')
             }
-            return `(${evalNode(node.left)}*${evalNode(node.right)})`
+            left = evalNode(node.left)
+            right = evalNode(node.right)
+            if (!left.cpx && !right.cpx) {
+                return real(`(${left.val}*${right.val})`)
+            }
+            return complex(`mul(${left.val},${right.val})`)
 
         case Token.DIV:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token DIVISION')
             }
-            return `(${evalNode(node.left)}/${evalNode(node.right)})`
+            left = evalNode(node.left)
+            right = evalNode(node.right)
+            if (!left.cpx && !right.cpx) {
+                return real(`(${left.val}/${right.val})`)
+            }
+            return complex(`div(${left.val},${right.val})`)
 
         case Token.POW:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token POWER')
             }
-            return `pow(${evalNode(node.left)},${evalNode(node.right)})`
+            left = evalNode(node.left)
+            right = evalNode(node.right)
+            if (!left.cpx && !right.cpx) {
+                return real(`_pow(${left.val},${right.val})`)
+            }
+            if (right.cpx) {
+                return reportError('Power cannot be complex')
+            }
+            return complex(`_pow(${left.val},${right.val})`)
 
         case Token.SQRT:
             if (node.right == null) {
                 return reportError('Missing argument for Token SQUARE ROOT')
             }
-            return `sqrt(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`sqrt(${right.val})`)
+            }
+            return reportError('Square root cannot be complex')
 
         case Token.LOG:
             if (node.right == null) {
                 return reportError('Missing argument for Token LOGARITHM')
             }
-            return `log(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`log(${right.val})`)
+            }
 
         case Token.EXP:
             if (node.right == null) {
                 return reportError('Missing argument for Token EXPOENTIAL')
             }
-            return `exp(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`exp(${right.val})`)
+            }
+            return reportError('Exponential cannot be complex')
 
         case Token.SIN:
             if (node.right == null) {
                 return reportError('Missing argument for Token SINE')
             }
-            return `sin(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`sin(${right.val})`)
+            }
+            return reportError('Sine cannot be complex')
 
         case Token.COS:
             if (node.right == null) {
                 return reportError('Missing argument for Token COSINE')
             }
-            return `cos(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`cos(${right.val})`)
+            }
+            return reportError('Cosine cannot be complex')
 
         case Token.TAN:
             if (node.right == null) {
                 return reportError('Missing argument for Token TANGENT')
             }
-            return `tan(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`tan(${right.val})`)
+            }
+            return reportError('Tangent cannot be complex')
 
         case Token.ASIN:
             if (node.right == null) {
                 return reportError('Missing argument for Token ARC SINE')
             }
-            return `asin(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`asin(${right.val})`)
+            }
+            return reportError('Arc sine cannot be complex')
 
         case Token.ACOS:
             if (node.right == null) {
                 return reportError('Missing argument for Token ARC COSINE')
             }
-            return `acos(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`acos(${right.val})`)
+            }
 
         case Token.ATAN:
             if (node.right == null) {
                 return reportError('Missing argument for Token ARC TANGENT')
             }
-            return `atan(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`atan(${right.val})`)
+            }
+            return reportError('Arc tangent cannot be complex')
         
         case Token.SINH:
             if (node.right == null) {
                 return reportError('Missing argument for Token SINE HYPERBOLICUS')
             }
-            return `sinh(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`sinh(${right.val})`)
+            }
+            return reportError('Sine hyperbolicus cannot be complex')
 
         case Token.COSH:
             if (node.right == null) {
                 return reportError('Missing argument for Token COSINE HYPERBOLICUS')
             }
-            return `cosh(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`cosh(${right.val})`)
+            }
+            return reportError('Cosine hyperbolicus cannot be complex')
 
         case Token.TANH:
             if (node.right == null) {
                 return reportError('Missing argument for Token TANGENT HYPERBOLICUS')
             }
-            return `tanh(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`tanh(${right.val})`)
+            }
 
         case Token.FLOOR:
             if (node.right == null) {
                 return reportError('Missing argument for Token FLOOR')
             }
-            return `floor(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`floor(${right.val})`)
+            }
+            return reportError('Floor cannot be complex')
 
         case Token.MIN:
             if (node.right == null) {
                 return reportError('Missing argument for Token MIN')
             }
-            if (!isIterable(evalNode(node.right))) {
+            if (!isIterable(evalNode(node.right).val)) {
                 return reportError('Malformed argument for Token MIN')
             }
-            return `min(${evalNode(node.right)})`
+            return real(`min(${evalNode(node.right).val})`)
 
         case Token.MAX:
             if (node.right == null) {
                 return reportError('Missing argument for Token MAX')
             }
-            if (!isIterable(evalNode(node.right))) {
+            if (!isIterable(evalNode(node.right).val)) {
                 return reportError('Malformed argument for Token MAX')
             }
-            return `max(${evalNode(node.right)})`
+            return real(`max(${evalNode(node.right).val})`)
 
         case Token.DELIM:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token DELIMITER')
             }
-            return `${evalNode(node.left)},${evalNode(node.right)}`
+            return real(`${evalNode(node.left).val},${evalNode(node.right).val}`)
 
         case Token.ABS:
             if (node.right == null) {
                 return reportError('Missing argument for Token ABSOLUTE')
             }
-            return `abs(${evalNode(node.right)})`
+            right = evalNode(node.right)
+            if (!right.cpx) {
+                return real(`abs(${right.val})`)
+            }
+            return real(`mag(${right.val})`)
 
         case Token.RAND:
             if (node.right == null) {
                 return reportError('Missing argument for Token RANDOM')
             }
-            return `random(${evalNode(node.right)})`
+            return real(`random(${evalNode(node.right).val})`)
 
         case Token.PERLIN: {
             if (node.right == null) {
                 return reportError('Missing arguments for Token PERLIN')
             }
-            if (!isIterable(evalNode(node.right))) {
+            if (!isIterable(evalNode(node.right).val)) {
                 return reportError('Malformed argument for Token PERLIN')
             }
-            return `noise(vec2(${evalNode(node.right)}))`
+            return real(`noise(vec2(${evalNode(node.right).val}))`)
         }
 
         case Token.MOD:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token MODULUS')
             }
-            return `mod(${evalNode(node.left)},${evalNode(node.right)})`
+            return real(`mod(${evalNode(node.left).val},${evalNode(node.right).val})`)
         
         case Token.LEVEL_SET:
             if (node.right == null) {
@@ -243,7 +338,7 @@ const evalNode = function (node: ASTNode): string | null {
                 if (node.right.left == null || node.right.right == null) {
                     return reportError('Missing arguments for Token LEVEL SET')
                 }
-                return `${evalNode(node.right.left)}+((level=${evalNode(node.right.right)})>0.0?0.0:0.0)`
+                return real(`${evalNode(node.right.left).val}+((level=${evalNode(node.right.right).val})>0.0?0.0:0.0)`)
             }
             return evalNode(node.right)
         
@@ -254,97 +349,125 @@ const evalNode = function (node: ASTNode): string | null {
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token LESS THAN')
             }
-            return `btof(${evalNode(node.left)}<${evalNode(node.right)})`
+            return real(`btof(${evalNode(node.left).val}<${evalNode(node.right).val})`)
 
         case Token.GREATER:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token GREATER THAN')
             }
-            return `btof(${evalNode(node.left)}>${evalNode(node.right)})`
+            return real(`btof(${evalNode(node.left).val}>${evalNode(node.right).val})`)
 
         case Token.LESS_OR_EQUAL:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token LESS THAN OR EQUAL TO')
             }
-            return `btof(${evalNode(node.left)}<=${evalNode(node.right)})`
+            return real(`btof(${evalNode(node.left).val}<=${evalNode(node.right).val})`)
 
         case Token.GREATER_OR_EQUAL:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token GREATER THAN OR EQUAL TO')
             }
-            return `btof(${evalNode(node.left)}>=${evalNode(node.right)})`
+            return real(`btof(${evalNode(node.left).val}>=${evalNode(node.right).val})`)
 
         case Token.EQUAL:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token EQUAL TO')
             }
-            return `btof(${evalNode(node.left)}==${evalNode(node.right)})`
+            return real(`btof(${evalNode(node.left).val}==${evalNode(node.right).val})`)
         
         case Token.AND:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token AND')
             }
-            return `btof(ftob(${evalNode(node.left)})&&ftob(${evalNode(node.right)}))`
+            return real(`btof(ftob(${evalNode(node.left).val})&&ftob(${evalNode(node.right).val}))`)
 
         case Token.OR:
             if (node.left == null || node.right == null) {
                 return reportError('Missing arguments for Token OR')
             }
-            return `btof(ftob(${evalNode(node.left)})||ftob(${evalNode(node.right)}))`
+            return real(`btof(ftob(${evalNode(node.left).val})||ftob(${evalNode(node.right).val}))`)
         
         case Token.USERVAR:
-            return `btof(${getUserVariable(node.op.val as string)})`
+            return real(`btof(${getUserVariable(node.op.val as string)})`)
         
         case Token.FACTORIAL:
             if (node.right == null) {
                 return reportError('Missing argument for Token FACTORIAL')
             }
-            return `factorial(${evalNode(node.right)})`
+            return real(`factorial(${evalNode(node.right).val})`)
 
         case Token.SIGMOID:
             if (node.right == null) {
                 return reportError('Missing argument for Token SIGMOID')
             }
-            return `(1.0/(1.0+exp(-(${evalNode(node.right)}))))`
+            return real(`(1.0/(1.0+exp(-(${evalNode(node.right).val}))))`)
 
         case Token.CIRCLE:
             if (node.right == null) {
                 return reportError('Missing argument for Token CIRCLE')
             }
-            return `circle(x,y,d,${evalNode(node.right)})`
+            return real(`circle(x,y,d,${evalNode(node.right).val})`)
 
         case Token.POINT:
             if (node.right == null) {
                 return reportError('Missing argument for Token POINT')
             }
-            return `point(x,y,d,${evalNode(node.right)})`
+            return real(`point(x,y,d,${evalNode(node.right).val})`)
 
         case Token.TRUE:
-            return 'btof(true)'
+            return real('btof(true)')
 
         case Token.FALSE:
-            return 'btof(false)'
+            return real('btof(false)')
 
         case Token.POLAR:
             if (node.right == null) {
                 return reportError('Missing argument for Token POLAR')
             }
-            return `(POLAR+${evalNode(node.right)})`
+            return real(`(POLAR+${evalNode(node.right).val})`)
         
         case Token.CARTESIAN:
             if (node.right == null) {
                 return reportError('Missing argument for Token CARTESIAN')
             }
-            return `(CARTESIAN+${evalNode(node.right)})`
+            return real(`(CARTESIAN+${evalNode(node.right).val})`)
         
         case Token.MOUSEX:
-            return 'mx'
+            return real('mx')
         
         case Token.MOUSEY:
-            return 'my'
+            return real('my')
 
         case Token.MOUSE:
             return reportError('Token MOUSE is not allowed')
+        
+        case Token.IMAGINARY:
+            return complex('vec2(0.0,1.0)')
+
+        case Token.SERIES:
+            if (node.right == null || node.right.left == null || node.right.right == null) {
+                return reportError('Missing argument for Token SERIES')
+            }
+            iterExpr = evalNode(node.right.right as ASTNode).val || ''
+            return real(`series(i,x,y,t,${evalNode(node.right.left).val})`)
+        
+        case Token.ITERATOR:
+            return real('k')
+        
+        case Token.COMPLEX:
+            return reportError('Token COMPLEX is not allowed')
+        
+        case Token.MAGNITUDE:
+            if (node.right == null) {
+                return reportError('Missing argument for Token MAGNITUDE')
+            }
+            return real(`mag(${evalNode(node.right).val})`)
+        
+        case Token.GRADIENT:
+            if (node.right == null) {
+                return reportError('Missing argument for Token GRADIENT')
+            }
+            return evalNode(node.right)
 
         case Token.ASSIGN:
             if (node.left == null || node.right == null) {
@@ -352,15 +475,15 @@ const evalNode = function (node: ASTNode): string | null {
             }
             if (node.left.op.tok !== Token.ASSIGNABLE) {
                 if (node.left.op.tok === Token.USERVAR) {
-                    setUserVariable(node.left.op.val as string, parseFloat(evalNode(node.right) as string))
+                    setUserVariable(node.left.op.val as string, parseFloat(evalNode(node.right).val as string))
                     return evalNode(node.right)
                 }
-                return `btof(abs(${evalNode(node.left)}-${evalNode(node.right)})<d)`
+                return real(`btof(abs(${evalNode(node.left).val}-${evalNode(node.right).val})<d)`)
             }
             if (getExternVariable(node.left.op.val as string) == null) {
                 return reportError(`Variable ${node.left.op.val} does not exist`)
             }
-            getExternVariable(node.left.op.val as string)?.set(parseFloat(evalNode(node.right) as string))
+            getExternVariable(node.left.op.val as string)?.set(parseFloat(evalNode(node.right).val as string))
             return evalNode(node.right)
         
         default:

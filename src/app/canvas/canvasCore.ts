@@ -76,8 +76,14 @@ export const initCanvas = function (): void {
 		zoomSmooth(-1)
 	})
 
-	bindExternVariable('scale', () => scale, (s: number) => (scale = s))
-	bindExternVariable('grid', () => gridEnabled ? 1 : 0, (g: number) => (gridEnabled = g === 1))
+	bindExternVariable('scale', () => scale, (s: number) => { scale = s; scheduleRedraw() })
+	bindExternVariable('grid', () => gridEnabled ? 1 : 0, (g: number) => { gridEnabled = g > 0; scheduleRedraw() })
+}
+
+export const resetCanvas = function (): void {
+	scale = 1.0
+	offset.set(0, 0)
+	scheduleRedraw()
 }
 
 export const canvasDraw = function (): void {
@@ -188,7 +194,8 @@ export const canvasDrawFunction = function (ast: ASTNode | null, color: string):
 	let moveTo = true
 	
 	for (let x = -subdivisions / 2 * aspect / scale - xOffset; x < subdivisions / 2 * aspect / scale - xOffset; x += step / scale) {
-		const f = constantEvalX(ast, x)
+		const c = constantEvalX(ast, x)
+		const f = typeof c === 'number' ? c : c.re
 
 		const error = constantEvalGetError()
 		if (error) {

@@ -9,16 +9,18 @@ precision mediump float;
 
 #define DISPLAY_MODE_SET				3
 #define DISPLAY_MODE_LEVEL_SET			4
+#define DISPLAY_MODE_GRADIENT			6
 
 // Inline assign
 #define ASSIGNF(x,y)			((x = y) > 0.0 ? 0.0 : 0.0)
 #define POLAR					(ASSIGNF(x,polar.x) + ASSIGNF(y,polar.y))
 #define CARTESIAN				(ASSIGNF(x,cartesian.x) + ASSIGNF(y,cartesian.y))
 
-// User supplied functions
+// User supplied
 #define NUM_USER_FX		USER_NUM_FUNC_INJ
 #define USER_COL		USER_COL_INJ
 #define USER_DISP		USER_DISP_INJ
+#define USER_ITER_EXPR	USER_ITER_EXPR_INJ
 
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
@@ -107,8 +109,20 @@ float btof(bool x) {
 	return x ? 1.0 : 0.0;
 }
 
-vec3 randomColorGrayscale(float idx){
+float mag(float x) {
+	return abs(x);
+}
+
+float mag(vec2 x) {
+	return length(x);
+}
+
+vec3 randomColorGrayscale(float idx) {
 	return vec3(random(idx), random(idx), random(idx));
+}
+
+vec3 randomColor(float idx) {
+	return vec3(random(idx), random(idx+100.0), random(idx+200.0));
 }
 
 vec2 toPol(float x, float y) {
@@ -119,10 +133,88 @@ vec2 toCart(float r, float theta) {
 	return vec2(r * cos(theta), r * sin(theta));
 }
 
+// Complex operations (Floats are real and vec2s are complex)
+vec2 add(vec2 a, vec2 b) {
+	return vec2(a.x + b.x, a.y + b.y);
+}
+vec2 add(vec2 a, float b) {
+	return vec2(a.x + b, a.y);
+}
+vec2 add(float a, vec2 b) {
+	return vec2(a + b.x, b.y);
+}
+vec2 sub(vec2 a, vec2 b) {
+	return vec2(a.x - b.x, a.y - b.y);
+}
+vec2 sub(vec2 a, float b) {
+	return vec2(a.x - b, a.y);
+}
+vec2 sub(float a, vec2 b) {
+	return vec2(a - b.x, -b.y);
+}
+vec2 mul(vec2 a, vec2 b) {
+	return vec2(a.x * b.x, a.y * b.y);
+}
+vec2 mul(vec2 a, float b) {
+	return vec2(a.x * b, a.y * b);
+}
+vec2 mul(float a, vec2 b) {
+	return vec2(a * b.x, a * b.y);
+}
+vec2 div(vec2 a, vec2 b) {
+	return vec2(a.x / b.x, a.y / b.y);
+}
+vec2 div(vec2 a, float b) {
+	return vec2(a.x / b, a.y / b);
+}
+vec2 div(float a, vec2 b) {
+	return vec2(a / b.x, a / b.y);
+}
+vec2 _pow(vec2 a, float b) {
+	// (a + bi)^n = r^n (cos(n*phi) + sin(n*phi)i)
+	float r = pow(mag(a), b);
+	float phi = b * atan(a.y, a.x);
+	return vec2(r * cos(phi), r * sin(phi));
+}
+float _pow(float a, float b) {
+	return pow(a, b);
+}
+
 float level = 1.0;
 vec3 levelset(float f) {
 	vec3 color = randomColorGrayscale(floor(f * level));
 	return color;
+}
+
+vec3 getGradientColorFromValue(float f) {
+	float step = 0.1 * f;
+	return vec3(noise(step), noise(step+200.0), noise(step+200.0));
+}
+
+/*
+float series(int j, float startVal, float numIterations) {
+	float k = startVal;
+	for (int i = 0; i < int(numIterations); i++) {
+		k = (USER_ITER_EXPR)[j].x;
+	}
+	return k;
+}
+*/
+vec2 series(int j, float x, float y, float t, vec2 startVal, float numIterations) {
+	vec2 k = startVal;
+	for (int i = 0; i < int(numIterations); i++) {
+		k = USER_ITER_EXPR[j];
+	}
+	return k;
+}
+// Niveau(Series(z,30,4,k^2+z))
+float series(int j, float x, float y, float t, vec2 startVal, float maxIterations, float thresh) {
+	vec2 k = startVal;
+	int i = 0;
+	for (; i < int(maxIterations) && length(k) < thresh; i++) {
+		k = USER_ITER_EXPR[j];
+	}
+	return float(i);
 }
 
 float f_x(int i, float x, float y, float t, float d, float mx, float my) {
@@ -157,6 +249,9 @@ void main() {
 			f = f_x(i, x, y, t, d, mx, my);
 			vec3 l = max(levelset(f), 0.2);
 			fragColor += vec4(l * color, 1.0);
+		} else if (display_modes[i] == DISPLAY_MODE_GRADIENT) {
+			f = f_x(i, x, y, t, d, mx, my);
+			fragColor += vec4(getGradientColorFromValue(f), 1.0);
 		} else {
 			fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 		}
