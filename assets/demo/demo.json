@@ -17,7 +17,7 @@
         {
             "name": "Mandelbrot",
             "inputs": [
-                "Gradient(Series(z,30,4,k^2+z))"
+                "Gradient(Series(z,140,4,k^2+z))"
             ],
             "defaults": [
                 "grid=false",
@@ -42,7 +42,8 @@
                 "min(-1.5x+9.7,0)"
             ],
             "defaults": [
-                "scale=0.8+0.3sin(0.3t)"
+                "scale=0.8+0.3sin(0.3t)",
+                "grid=true"
             ]
         }
     ]
