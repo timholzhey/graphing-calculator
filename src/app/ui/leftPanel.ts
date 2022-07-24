@@ -1,7 +1,7 @@
 import { scheduleRedraw } from '../../index'
 import { resetPlots, setInputAt, setNumInputs } from '../core/controller'
 import { PlotDriver, PlotStatus } from '../defines'
-import { Complex, complexToString, stringToHTML, Vector } from '../utils'
+import { Complex, complexToString, isIterable, stringToHTML, Vector } from '../utils'
 import { onMouseDrag } from './userInteract'
 
 const inputsElt: HTMLElement | any = document.querySelector('.inputs')
@@ -197,7 +197,11 @@ export const inputSetConstEvalAt = function (idx: number, constEval: Complex | n
 	const constEvalElt: HTMLElement | null = elt.querySelector('.const-eval')
 	if (!constEvalElt) return
 
-	constEvalElt.innerText = '= ' + typeof constEval === 'number' ? constEval.toString() : complexToString(constEval as Complex)
+	if (isIterable(constEval)) {
+		constEvalElt.innerText = `= (${constEval.toString()})`
+	} else {
+		constEvalElt.innerText = '= ' + complexToString(constEval as Complex)
+	}
 	constEvalElt.classList.add('visible')
 }
 

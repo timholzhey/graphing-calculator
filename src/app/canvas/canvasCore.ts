@@ -76,8 +76,14 @@ export const initCanvas = function (): void {
 		zoomSmooth(-1)
 	})
 
-	bindExternVariable('scale', () => scale, (s: number) => { scale = s; scheduleRedraw() })
-	bindExternVariable('grid', () => gridEnabled ? 1 : 0, (g: number) => { gridEnabled = g > 0; scheduleRedraw() })
+	bindExternVariable('scale', () => scale, (s: number | number[]) => { scale = s as number; scheduleRedraw() })
+	bindExternVariable('grid', () => gridEnabled ? 1 : 0, (g: number | number[]) => { gridEnabled = g as number > 0; scheduleRedraw() })
+	bindExternVariable('offset', () => [offset.x, offset.y], (o: number | number[]) => { setOffset((o as number[])[0], (o as number[])[1]); scheduleRedraw() })
+}
+
+const setOffset = function (x: number, y: number) {
+	offset.x = - x * (mainCanvas.width / subdivisions)
+	offset.y = y * (mainCanvas.height / subdivisions)
 }
 
 export const resetCanvas = function (): void {
@@ -125,6 +131,7 @@ const drawGrid = function (): void {
 	const subdivMult = 2 ** Math.floor(Math.log(scale) / Math.log(2))
 
 	// y axis subdivisions
+	const yOffset = offset.y * scale
 	const yStep = height / subdivisions / subdivMult * scale
 	let ySub = -Math.floor(subdivisions / scale / 2 * subdivMult) / subdivMult -
 		Math.floor(offset.y / yStep) / subdivMult - (offset.y < 0 ? (1 / subdivMult) : 0) - (1 / subdivMult)

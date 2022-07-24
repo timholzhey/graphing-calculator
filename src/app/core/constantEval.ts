@@ -2,7 +2,7 @@ import { getGlobalTime, scheduleRedraw } from '../../index'
 import { getExternVariable, getUserVariable, setUserVariable, Token } from '../lang/lexer'
 import { ASTNode } from '../lang/parser'
 import { getMousePos } from '../ui/userInteract'
-import { Complex, cpx, factorial, perlin2, sigmoid } from '../utils'
+import { Complex, cpx, factorial, isIterable, perlin2, sigmoid } from '../utils'
 
 let latestError: string | null = null
 let x: number | null
@@ -33,8 +33,6 @@ const reportError = function (error: string): number {
 }
 
 export const constantEvalGetError = (): string | null => latestError
-
-const isIterable = (obj: any): boolean => obj != null && typeof obj[Symbol.iterator] === 'function'
 
 const evalNode = function (node: ASTNode): number | Complex | number[] {
     let left, right
@@ -534,10 +532,20 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             if (getExternVariable(node.left.op.val as string) == null) {
                 return reportError(`Variable ${node.left.op.val} does not exist`)
             }
-            getExternVariable(node.left.op.val as string)?.set((evalNode(node.right) as Complex).re)
+            right = evalNode(node.right) as any
+            getExternVariable(node.left.op.val as string)?.set(right?.re ? right.re : right)
             return evalNode(node.right)
         
+        case Token.ASSIGNABLE:
+            if (getExternVariable(node.op.val as string) == null) {
+                return reportError(`Variable ${node.op.val} does not exist`)
+            }
+            {
+                const extern = getExternVariable(node.op.val as string)?.get() as any
+                return isIterable(extern) ? extern : cpx(extern)
+            }
+                        
         default:
-            return reportError(`Unknown token ${node.op.val}`)
+            return reportError(`Unknown token ${node.op.tok}`)
     }
 }

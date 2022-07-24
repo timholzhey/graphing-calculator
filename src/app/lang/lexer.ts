@@ -214,9 +214,9 @@ const isIdentifier = (str: string): boolean => {
 	return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(str)
 }
 
-const ExternVariables: { [key: string]: { get: () => number, set: (val: number) => void } } = {}
+const ExternVariables: { [key: string]: { get: () => number | number[], set: (val: number | number[]) => void } } = {}
 
-export const bindExternVariable = (name: string, getter: () => number, setter: (value: number) => void) => {
+export const bindExternVariable = (name: string, getter: () => number | number[], setter: (value: number | number[]) => void) => {
 	ExternVariables[name] = { get: getter, set: setter }
 }
 
@@ -224,7 +224,7 @@ export const unbindExternVariable = (name: string) => {
 	delete ExternVariables[name]
 }
 
-export const getExternVariable = (name: string): { get: () => number, set: (val: number) => void } | null => {
+export const getExternVariable = (name: string): { get: () => number | number[], set: (val: number | number[]) => void } | null => {
 	return ExternVariables[name]
 }
 

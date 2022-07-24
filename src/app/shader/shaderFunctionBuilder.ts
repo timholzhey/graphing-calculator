@@ -1,6 +1,7 @@
 import { getGlobalTime, scheduleRedraw } from '../../index'
 import { getExternVariable, getUserVariable, setUserVariable, Token } from '../lang/lexer'
 import { ASTNode } from '../lang/parser'
+import { isIterable } from '../utils'
 
 let latestError: string | null = null
 export const shaderFunctionBuilderGetError = (): string | null => latestError
@@ -29,8 +30,6 @@ const reportError = function (error: string): { val: null, cpx: false } {
 const numToFloatString = function (num: number): string {
     return num.toString().indexOf('.') === -1 ? num.toString() + '.0' : num.toString()
 }
-
-const isIterable = (obj: any): boolean => obj != null && typeof obj[Symbol.iterator] === 'function'
 
 const real = (val: string): { val: string | null, cpx: false } => {
     return { val, cpx: false }

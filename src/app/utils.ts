@@ -33,6 +33,8 @@ export const complexToString = function (c: Complex): string {
 
 export const cpx = (num: number) => ({ re: num, im: 0 })
 
+export const isIterable = (obj: any): boolean => obj != null && typeof obj[Symbol.iterator] === 'function'
+
 // Perlin noise from https://github.com/josephg/noisejs/blob/master/perlin.js
 const perm = new Array(512)
 const gradP = new Array(512)
