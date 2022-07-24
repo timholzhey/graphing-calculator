@@ -32,7 +32,7 @@ export const initMenuBar = function (): void {
 		exampleJson = data
 		numExamples = data?.numPlots
 		for (let i = 0; i < numExamples; i++) {
-			let container = document.createElement('div')
+			const container = document.createElement('div')
 			container.innerHTML = data?.plots[i]?.name
 			container.classList.add('example-list-item')
 			container.addEventListener('click', () => {
@@ -45,4 +45,7 @@ export const initMenuBar = function (): void {
 	demoButton.addEventListener('click', () => {
 		examplesList.classList.toggle('hidden')
 	})
+
+	const title = document.querySelector('.menu-bar-title h1') as HTMLHeadingElement
+	title.onclick = () => window.location.reload()
 }

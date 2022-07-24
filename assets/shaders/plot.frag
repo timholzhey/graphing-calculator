@@ -188,7 +188,7 @@ vec3 levelset(float f) {
 
 vec3 getGradientColorFromValue(float f) {
 	float step = 0.1 * f;
-	return vec3(noise(step), noise(step+200.0), noise(step+200.0));
+	return vec3(noise(step), noise(step+200.0), noise(step+300.0));
 }
 
 /*

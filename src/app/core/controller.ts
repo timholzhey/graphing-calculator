@@ -86,7 +86,7 @@ const initPlot = function (idx: number) {
         continuous: false,
         color: getColorFromIndex(idx),
         error: '',
-        iterExpr: '',
+        iterExpr: ''
     }
 }
 

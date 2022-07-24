@@ -306,6 +306,7 @@ body {
     font-family: 'Adam.CG Pro';
     white-space: nowrap;
     margin: 0 1em;
+    cursor: pointer;
 }
 
 .button-icon {
@@ -400,4 +401,12 @@ body {
 .example-list-item:hover {
     cursor: pointer;
     color: var(--color-text-highlight)
+}
+
+.fps-display {
+    position: absolute;
+    z-index: 1000;
+    left: 0.75em;
+    top: 0.5em;
+    font-size: small;
 }

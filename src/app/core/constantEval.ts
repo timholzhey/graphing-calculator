@@ -115,33 +115,35 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             return { re: left.re * right.re - left.im * right.im, im: left.re * right.im + left.im * right.re }
 
         case Token.DIV:
-            if (node.left == null || node.right == null) {
-                return reportError('Missing arguments for Token DIVISION')
+            {
+                if (node.left == null || node.right == null) {
+                    return reportError('Missing arguments for Token DIVISION')
+                }
+                left = evalNode(node.left) as Complex
+                right = evalNode(node.right) as Complex
+                if (right.re === 0 && right.im === 0) {
+                    return reportError('Division by zero')
+                }
+                if (left.im === 0 && right.im === 0) {
+                    return cpx(left.re / right.re)
+                }
+                const denom = right.re * right.re + right.im * right.im
+                return { re: (left.re * right.re + left.im * right.im) / denom, im: (left.im * right.re - left.re * right.im) / denom }
             }
-            left = evalNode(node.left) as Complex
-            right = evalNode(node.right) as Complex
-            if (right.re === 0 && right.im === 0) {
-                return reportError('Division by zero')
-            }
-            if (left.im === 0 && right.im === 0) {
-                return cpx(left.re / right.re)
-            }
-            const denom = right.re * right.re + right.im * right.im
-            return { re: (left.re * right.re + left.im * right.im) / denom, im: (left.im * right.re - left.re * right.im) / denom }
 
         case Token.POW:
-            if (node.left == null || node.right == null) {
-                return reportError('Missing arguments for Token POWER')
-            }
-            left = evalNode(node.left) as Complex
-            right = evalNode(node.right) as Complex
-            if (left.im === 0 && right.im === 0) {
-                return cpx(Math.pow(left.re, right.re))
-            }
-            if (right.im !== 0) {
-                return reportError('Imaginary power is not allowed')
-            }
             {
+                if (node.left == null || node.right == null) {
+                    return reportError('Missing arguments for Token POWER')
+                }
+                left = evalNode(node.left) as Complex
+                right = evalNode(node.right) as Complex
+                if (left.im === 0 && right.im === 0) {
+                    return cpx(Math.pow(left.re, right.re))
+                }
+                if (right.im !== 0) {
+                    return reportError('Imaginary power is not allowed')
+                }
                 // (a + bi)^n = r^n (cos(n*phi) + sin(n*phi)i)
                 const r = Math.sqrt(left.re * left.re + left.im * left.im)
                 const phi = Math.atan2(left.im, left.re)
@@ -281,39 +283,43 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             return reportError('FLOOR is not defined for complex numbers')
 
         case Token.MIN:
-            if (node.right == null) {
-                return reportError('Missing argument for Token MIN')
+            {
+                if (node.right == null) {
+                    return reportError('Missing argument for Token MIN')
+                }
+                if (!isIterable(evalNode(node.right))) {
+                    return reportError('Malformed argument for Token MIN')
+                }
+                const vals = [...evalNode(node.right) as number[]]
+                return cpx(Math.min(...vals))
             }
-            if (!isIterable(evalNode(node.right))) {
-                return reportError('Malformed argument for Token MIN')
-            }
-            const vals = [...evalNode(node.right) as number[]]
-            return cpx(Math.min(...vals))
 
         case Token.MAX:
-            if (node.right == null) {
-                return reportError('Missing argument for Token MAX')
+            {
+                if (node.right == null) {
+                    return reportError('Missing argument for Token MAX')
+                }
+                if (!isIterable(evalNode(node.right))) {
+                    return reportError('Malformed argument for Token MAX')
+                }
+                const vals2 = [...evalNode(node.right) as number[]]
+                return cpx(Math.max(...vals2))
             }
-            if (!isIterable(evalNode(node.right))) {
-                return reportError('Malformed argument for Token MAX')
-            }
-            const vals2 = [...evalNode(node.right) as number[]]
-            return cpx(Math.max(...vals2))
 
         case Token.DELIM:
-            if (node.left == null || node.right == null) {
-                return reportError('Missing arguments for Token DELIMITER')
-            }
-            left = evalNode(node.left) as any
-            right = evalNode(node.right) as any
             {
-                let out: number[] = []
-                if (typeof left?.re == 'number') {
+                if (node.left == null || node.right == null) {
+                    return reportError('Missing arguments for Token DELIMITER')
+                }
+                left = evalNode(node.left) as any
+                right = evalNode(node.right) as any
+                const out: number[] = []
+                if (typeof left?.re === 'number') {
                     out.push(left?.re)
                 } else {
                     out.concat(left?.re)
                 }
-                if (typeof right?.re == 'number') {
+                if (typeof right?.re === 'number') {
                     out.push(right?.re)
                 } else {
                     out.concat(right?.re)
@@ -537,10 +543,10 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             return evalNode(node.right)
         
         case Token.ASSIGNABLE:
-            if (getExternVariable(node.op.val as string) == null) {
-                return reportError(`Variable ${node.op.val} does not exist`)
-            }
             {
+                if (getExternVariable(node.op.val as string) == null) {
+                    return reportError(`Variable ${node.op.val} does not exist`)
+                }
                 const extern = getExternVariable(node.op.val as string)?.get() as any
                 return isIterable(extern) ? extern : cpx(extern)
             }

@@ -164,6 +164,7 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
             if (!right.cpx) {
                 return real(`log(${right.val})`)
             }
+            return reportError('Logarithm cannot be complex')
 
         case Token.EXP:
             if (node.right == null) {
@@ -223,6 +224,7 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
             if (!right.cpx) {
                 return real(`acos(${right.val})`)
             }
+            return reportError('Arc cosine cannot be complex')
 
         case Token.ATAN:
             if (node.right == null) {
@@ -236,7 +238,7 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
         
         case Token.SINH:
             if (node.right == null) {
-                return reportError('Missing argument for Token SINE HYPERBOLICUS')
+                return reportError('Missing argument for Token HYPERBOLIC SINE')
             }
             right = evalNode(node.right)
             if (!right.cpx) {
@@ -246,7 +248,7 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
 
         case Token.COSH:
             if (node.right == null) {
-                return reportError('Missing argument for Token COSINE HYPERBOLICUS')
+                return reportError('Missing argument for Token HYPERBOLIC COSINE')
             }
             right = evalNode(node.right)
             if (!right.cpx) {
@@ -256,12 +258,13 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
 
         case Token.TANH:
             if (node.right == null) {
-                return reportError('Missing argument for Token TANGENT HYPERBOLICUS')
+                return reportError('Missing argument for Token HYPERBOLIC TANGENT')
             }
             right = evalNode(node.right)
             if (!right.cpx) {
                 return real(`tanh(${right.val})`)
             }
+            return reportError('Hyperbolic tangent cannot be complex')
 
         case Token.FLOOR:
             if (node.right == null) {

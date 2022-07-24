@@ -21,7 +21,8 @@
             ],
             "defaults": [
                 "grid=false",
-                "scale=7"
+                "scale=7",
+                "offset=(-2,0)"
             ]
         },
         {

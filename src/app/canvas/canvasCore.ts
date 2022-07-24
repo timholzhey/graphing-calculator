@@ -1,5 +1,5 @@
 import { map, Vector } from '../utils'
-import { scheduleRedraw } from '../../index'
+import { getFPSSmoothed, scheduleRedraw } from '../../index'
 import { onMouseDrag } from '../ui/userInteract'
 import { ASTNode } from '../lang/parser'
 import { constantEvalGetError, constantEvalX } from '../core/constantEval'
@@ -10,6 +10,7 @@ const ctx = mainCanvas.getContext('2d')
 
 const zoomButtonIn = document.querySelector('.zoom-in-button') as HTMLButtonElement
 const zoomButtonOut = document.querySelector('.zoom-out-button') as HTMLButtonElement
+const fpsDisplay = document.querySelector('.fps-display') as HTMLDivElement
 
 const offset = new Vector(0, 0)
 let scale = 1.0
@@ -23,7 +24,10 @@ let isDragged = false
 let gridEnabled = true
 
 const zoomCanvas = function (norm: number) {
-	scale *= norm > 0 ? 1 + 0.2 * norm : 1 / (1 - 0.2 * norm)
+	const fact = norm > 0 ? 1 + 0.2 * norm : 1 / (1 - 0.2 * norm)
+	scale *= fact
+	offset.x *= fact
+	offset.y *= fact
 	scheduleRedraw()
 }
 
@@ -79,10 +83,12 @@ export const initCanvas = function (): void {
 	bindExternVariable('scale', () => scale, (s: number | number[]) => { scale = s as number; scheduleRedraw() })
 	bindExternVariable('grid', () => gridEnabled ? 1 : 0, (g: number | number[]) => { gridEnabled = g as number > 0; scheduleRedraw() })
 	bindExternVariable('offset', () => [offset.x, offset.y], (o: number | number[]) => { setOffset((o as number[])[0], (o as number[])[1]); scheduleRedraw() })
+
+	window.onresize = () => scheduleRedraw()
 }
 
 const setOffset = function (x: number, y: number) {
-	offset.x = - x * (mainCanvas.width / subdivisions)
+	offset.x = -x * (mainCanvas.width / subdivisions)
 	offset.y = y * (mainCanvas.height / subdivisions)
 }
 
@@ -101,6 +107,10 @@ export const canvasDraw = function (): void {
 	ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height)
 
 	drawGrid()
+}
+
+export const driveCanvas = function (): void {
+	fpsDisplay.innerHTML = getFPSSmoothed().toFixed(0)
 }
 
 const drawLine = function (fromX: number, fromY: number, toX: number, toY: number): void {
@@ -131,7 +141,6 @@ const drawGrid = function (): void {
 	const subdivMult = 2 ** Math.floor(Math.log(scale) / Math.log(2))
 
 	// y axis subdivisions
-	const yOffset = offset.y * scale
 	const yStep = height / subdivisions / subdivMult * scale
 	let ySub = -Math.floor(subdivisions / scale / 2 * subdivMult) / subdivMult -
 		Math.floor(offset.y / yStep) / subdivMult - (offset.y < 0 ? (1 / subdivMult) : 0) - (1 / subdivMult)
