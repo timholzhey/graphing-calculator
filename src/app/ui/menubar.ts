@@ -47,5 +47,5 @@ export const initMenuBar = function (): void {
 	})
 
 	const title = document.querySelector('.menu-bar-title h1') as HTMLHeadingElement
-	title.onclick = () => window.location.reload()
+	title.onclick = () => window.location.replace(window.location.origin)
 }

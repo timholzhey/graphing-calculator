@@ -4,6 +4,7 @@ import { onMouseDrag } from '../ui/userInteract'
 import { ASTNode } from '../lang/parser'
 import { constantEvalGetError, constantEvalX } from '../core/constantEval'
 import { bindExternVariable } from '../lang/lexer'
+import { loadPlots } from '../core/controller'
 
 export const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement
 const ctx = mainCanvas.getContext('2d')
@@ -85,12 +86,26 @@ export const initCanvas = function (): void {
 	bindExternVariable('offset', () => [offset.x, offset.y], (o: number | number[]) => { setOffset((o as number[])[0], (o as number[])[1]); scheduleRedraw() })
 
 	window.onresize = () => scheduleRedraw()
+
+	const params = new URLSearchParams(window.location.search)
+	const plots = params.get('plot')
+	const _scale = params.get('scale')
+
+	if (plots) {
+		loadPlots(plots.split(';'), [])
+	}
+	if (_scale) {
+		scale = parseFloat(_scale)
+	}
 }
 
 const setOffset = function (x: number, y: number) {
 	offset.x = -x * (mainCanvas.width / subdivisions)
 	offset.y = y * (mainCanvas.height / subdivisions)
 }
+
+export const getScale = () => scale
+export const getOffset = () => offset
 
 export const resetCanvas = function (): void {
 	scale = 1.0

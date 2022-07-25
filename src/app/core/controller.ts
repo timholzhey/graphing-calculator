@@ -1,5 +1,5 @@
 import { scheduleRedraw } from '../../index'
-import { canvasDrawFunction, resetCanvas } from '../canvas/canvasCore'
+import { canvasDrawFunction, getOffset, getScale, resetCanvas } from '../canvas/canvasCore'
 import { PlotDisplayMode, PlotDriver, PlotStatus } from '../defines'
 import { Error } from '../lang/lexer'
 import { ASTNode, parse, parserGetContinuous, parserGetDisplayMode, parserGetDriver, parserGetError } from '../lang/parser'
@@ -59,7 +59,6 @@ export const loadPlots = function (plots: string[], defaults: string[]) {
     resetCanvas()
     resetInputs()
 
-    console.log(defaults)
     setNumInputs(defaults.length)
     for (let i = 0; i < defaults.length; i++) {
         addNewInputWithValue(defaults[i])
@@ -91,6 +90,8 @@ const initPlot = function (idx: number) {
 }
 
 export const drivePlots = (): void => {
+    let changed = false
+
     for (let i = 1; i <= numInputs; i++) {
         // Init plot
         if (!plots[i]) {
@@ -101,6 +102,7 @@ export const drivePlots = (): void => {
         const plot = plots[i]
 
         if (plot.inputChanged) {
+            changed = true
             plot.inputChanged = false
             const statusBefore = plot.status
 
@@ -171,6 +173,17 @@ export const drivePlots = (): void => {
                 inputSetErrorAt(i, plot.error)
             }
         }
+    }
+
+    if (changed) {
+        const inputsStrArr = []
+        for (let i = 1; i <= numInputs; i++) {
+            inputsStrArr.push(plots[i].input)
+        }
+        let params = '?'
+        params += 'plot=' + inputsStrArr.map(str => encodeURIComponent(str)).join(';')
+        params += '&scale=' + getScale()
+        window.history.pushState('', '', params)
     }
 }
 
