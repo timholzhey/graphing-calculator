@@ -15,7 +15,7 @@
         You need to enable JavaScript to run this app.
     </noscript>
     <div id="app">
-        <div id="menu-bar">
+        <div id="menu-bar" class="ui-component">
             <div class="menu-bar-title">
                 <h1>Graphing calculator</h1>
             </div>
@@ -25,6 +25,9 @@
                     <button class="demo-button">Examples</button>
                 </div>
                 <div class="menu-bar-button">
+                    <button class="export-button">Export</button>
+                </div>
+                <div class="menu-bar-button">
                     <button class="github-button" data-href="https://github.com/timholzhey/graphing-calculator" data-icon="../assets/images/github_1024_black.png" data-filter="invert(1)"></button>
                 </div>
             </div>
@@ -32,14 +35,14 @@
         <div id="content">
             <canvas id="shader-canvas" width="1000" height="1000"></canvas>
             <canvas id="main-canvas" width="1000" height="1000"></canvas>
-            <div class="canvas-actions">
+            <div class="canvas-actions ui-component">
                 <button class="zoom-in-button">+</button>
                 <button class="zoom-out-button">-</button>
             </div>
-            <div class="examples-list hidden"></div>
-            <div class="fps-display"></div>
+            <div class="examples-list hidden ui-component"></div>
+            <div class="fps-display ui-component"></div>
         </div>
-        <div id="left-panel">
+        <div id="left-panel" class="ui-component">
             <div class="inputs">
                 <!-- Inputs-->
             </div>

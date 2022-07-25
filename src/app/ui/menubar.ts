@@ -1,3 +1,4 @@
+import { enablePreview } from '../canvas/canvasCore'
 import { loadPlots } from '../core/controller'
 import { stringToHTML } from '../utils'
 
@@ -33,11 +34,22 @@ export const initMenuBar = function (): void {
 		numExamples = data?.numPlots
 		for (let i = 0; i < numExamples; i++) {
 			const container = document.createElement('div')
-			container.innerHTML = data?.plots[i]?.name
+			const heading = document.createElement('h3')
+			heading.innerHTML = data?.plots[i]?.name
+			container.appendChild(heading)
+
 			container.classList.add('example-list-item')
 			container.addEventListener('click', () => {
 				loadPlots(exampleJson?.plots[i]?.inputs || '', exampleJson?.plots[i]?.defaults || '')
 			})
+
+			const iframe = document.createElement('iframe')
+			iframe.src = `?plot=${exampleJson?.plots[i]?.inputs.map(encodeURIComponent).join(';') || ''}&preview=true`
+			iframe.classList.add('example-preview')
+			iframe.style.overflow = 'hidden'
+			iframe.style.border = 'none'
+			container.appendChild(iframe)
+
 			examplesList.appendChild(container)
 		}
 	})
@@ -48,4 +60,9 @@ export const initMenuBar = function (): void {
 
 	const title = document.querySelector('.menu-bar-title h1') as HTMLHeadingElement
 	title.onclick = () => window.location.replace(window.location.origin)
+
+	const exportButton = document.querySelector('.export-button') as HTMLButtonElement
+	exportButton.addEventListener('click', () => {
+		enablePreview()
+	})
 }

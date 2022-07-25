@@ -44,7 +44,8 @@
             ],
             "defaults": [
                 "scale=0.8+0.3sin(0.3t)",
-                "grid=true"
+                "grid=true",
+                "scale=0.8"
             ]
         }
     ]

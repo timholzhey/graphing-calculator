@@ -1,5 +1,5 @@
 import { map, Vector } from '../utils'
-import { getFPSSmoothed, scheduleRedraw } from '../../index'
+import { getFPSSmoothed, scheduleExit, scheduleRedraw, scheduleSnapshot } from '../../index'
 import { onMouseDrag } from '../ui/userInteract'
 import { ASTNode } from '../lang/parser'
 import { constantEvalGetError, constantEvalX } from '../core/constantEval'
@@ -47,7 +47,7 @@ const zoomSmooth = function (norm: number): void {
 	}, 10)
 }
 
-export const initCanvas = function (): void {
+export const initCanvas = function (): boolean {
 	mainCanvas.addEventListener('mousedown', function (e: MouseEvent): void {
 		dragFromOffset.set(offset.x, offset.y)
 		dragFromMouse.set(e.clientX, e.clientY)
@@ -90,6 +90,7 @@ export const initCanvas = function (): void {
 	const params = new URLSearchParams(window.location.search)
 	const plots = params.get('plot')
 	const _scale = params.get('scale')
+	const preview = params.get('preview')
 
 	if (plots) {
 		loadPlots(plots.split(';'), [])
@@ -97,6 +98,38 @@ export const initCanvas = function (): void {
 	if (_scale) {
 		scale = parseFloat(_scale)
 	}
+	if (preview && preview === 'true') {
+		enablePreview()
+		return true
+	}
+
+	return false
+}
+
+export const enablePreview = function (): void {
+	gridEnabled = false
+	document.getElementById('app')?.classList.add('fullscreen')
+	scheduleRedraw()
+	setTimeout(() => {
+		scheduleSnapshot()
+		scheduleExit()
+	}, 100)
+}
+
+export const canvasFreezeFrame = function (): void {
+	// merge main canvas with shader canvas
+	const shaderCanvas = document.getElementById('shader-canvas') as HTMLCanvasElement
+	if (!ctx) return
+	ctx.drawImage(shaderCanvas, 0, 0, shaderCanvas.width, shaderCanvas.height)
+
+	const img = document.createElement('img')
+	img.src = mainCanvas.toDataURL('image/png')
+	img.style.position = 'absolute'
+	img.style.top = '0'
+	img.style.left = '0'
+	img.style.width = '100%'
+	img.style.height = '100%'
+	document.body.appendChild(img)
 }
 
 const setOffset = function (x: number, y: number) {

@@ -15,7 +15,7 @@ let error = false
 const fileBuffers: {[key: string]: string} = {}
 
 const canvas = document.getElementById('shader-canvas') as HTMLCanvasElement
-const ctx = canvas.getContext('webgl2') as WebGLRenderingContext
+const ctx = canvas.getContext('webgl2', { preserveDrawingBuffer: true }) as WebGLRenderingContext
 
 export const shadersClearAll = function () {
 	scheduleReloadShaders()
