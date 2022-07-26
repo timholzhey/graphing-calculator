@@ -32,6 +32,7 @@ export const initMenuBar = function (): void {
 	}).then((data: any) => {
 		exampleJson = data
 		numExamples = data?.numPlots
+
 		for (let i = 0; i < numExamples; i++) {
 			const container = document.createElement('div')
 			const heading = document.createElement('h3')
@@ -39,9 +40,6 @@ export const initMenuBar = function (): void {
 			container.appendChild(heading)
 
 			container.classList.add('example-list-item')
-			container.addEventListener('click', () => {
-				loadPlots(exampleJson?.plots[i]?.inputs || '', exampleJson?.plots[i]?.defaults || '')
-			})
 
 			const iframe = document.createElement('iframe')
 			iframe.src = `?plot=${exampleJson?.plots[i]?.inputs.map(encodeURIComponent).join(';') || ''}&preview=true`
@@ -49,6 +47,13 @@ export const initMenuBar = function (): void {
 			iframe.style.overflow = 'hidden'
 			iframe.style.border = 'none'
 			container.appendChild(iframe)
+
+			const clickable = document.createElement('div')
+			clickable.classList.add('example-clickable')
+			clickable.addEventListener('click', () => {
+				loadPlots(exampleJson?.plots[i]?.inputs || '', exampleJson?.plots[i]?.defaults || '')
+			})
+			container.appendChild(clickable)
 
 			examplesList.appendChild(container)
 		}
@@ -64,5 +69,10 @@ export const initMenuBar = function (): void {
 	const exportButton = document.querySelector('.export-button') as HTMLButtonElement
 	exportButton.addEventListener('click', () => {
 		enablePreview()
+	})
+
+	const exitFullscreen = document.querySelector('.exit-fullscreen') as HTMLDivElement
+	exitFullscreen.addEventListener('click', () => {
+		window.location.reload()
 	})
 }
