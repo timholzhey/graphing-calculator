@@ -1,5 +1,5 @@
 {
-    "numPlots": 3,
+    "numPlots": 4,
     "plots": [
         {
             "name": "Waves",
@@ -17,7 +17,7 @@
         {
             "name": "Mandelbrot",
             "inputs": [
-                "Gradient(Series(z,140,4,k^2+z))"
+                "Gradient(DivSeries(z,140,4,k^2+z))"
             ],
             "defaults": [
                 "grid=false",
@@ -46,6 +46,16 @@
                 "scale=0.8+0.3sin(0.3t)",
                 "grid=true",
                 "scale=0.8"
+            ]
+        },
+        {
+            "name": "Psychedelic",
+            "inputs": [
+                "Gradient(3tDivSeries(z+0.2+0.001sint+0.6i+0.001costi,100,4,k^2+z+0.55i+0.38+0.001sint+0.001costi))",
+                "scale=1000+300sint"
+            ],
+            "defaults": [
+
             ]
         }
     ]

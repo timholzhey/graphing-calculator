@@ -504,6 +504,9 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
         
         case Token.SERIES:
             return reportError('Token SERIES not implemented')
+
+        case Token.DIV_SERIES:
+            return reportError('Token SERIES not implemented')
         
         case Token.ITERATOR:
             return reportError('Token ITERATOR not implemented')

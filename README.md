@@ -6,12 +6,16 @@ Made with ts, webgl and canvas
 
 | Name | Description | Min num args | Args | Args dimension | Aliases |
 |---|---|---|---|---|---|
-`Level` | Displays the levels of a scalar set | 1 | set, (levels) | 2 | `Niveau` |
+`Level` | Displays the levels of a scalar set | 1 | set, (level subdivisions) | 2 | `Niveau` |
+`Gradient` | Same as Level but with a blended color gradient | 1 | set | 2 | |
 `VectorField` | Displays the vectors of a vector field | 2 | y, y | 1 | |
 `Circle` | Displays a circle shape | 3 | x, y, rad, (fill) | 1 | |
 `Point` | Displays a point shape | 2 | x, y | 1 | |
 `Polar` | Converts coordinates from cartesian to polar | 1 | set | 2 | `Pol` |
 `Cartesian` | Converts coordinates from polar to cartesian | 1 | set | 2 | `Cart` |
+`Series` | Iterates a series based on an expression and returns the final value | 3 | start, steps, expression | 1/complex | |
+`DivSeries` | Iterates a divergent series up to a threshhold and returns the number of iterations up until divergence | 4 | start, steps, threshhold, expression | 1/complex | |
+`Mag` | Magnitude of a complex number | 1 | number | complex | |
 
 ## Base functions
 
@@ -59,6 +63,9 @@ Name | Description |
 `x` | First dimension variable |
 `y` | Second dimension variable |
 `t` | Frame time |
+`k` | Iterator for series |
 `mouseX` | X position of the mouse |
 `mouseY` | Y position of the mouse |
 `scale` | Scale of the graph grid |
+`grid` | Turn grid on or off |
+`offset` | Set viewport xy offset

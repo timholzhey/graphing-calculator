@@ -453,6 +453,13 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
             iterExpr = evalNode(node.right.right as ASTNode).val || ''
             return real(`series(i,x,y,t,${evalNode(node.right.left).val})`)
         
+        case Token.DIV_SERIES:
+            if (node.right == null || node.right.left == null || node.right.right == null) {
+                return reportError('Missing argument for Token SERIES')
+            }
+            iterExpr = evalNode(node.right.right as ASTNode).val || ''
+            return real(`divseries(i,x,y,t,${evalNode(node.right.left).val})`)
+        
         case Token.ITERATOR:
             return real('k')
         

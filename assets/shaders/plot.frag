@@ -207,8 +207,7 @@ vec2 series(int j, float x, float y, float t, vec2 startVal, float numIterations
 	}
 	return k;
 }
-// Niveau(Series(z,30,4,k^2+z))
-float series(int j, float x, float y, float t, vec2 startVal, float maxIterations, float thresh) {
+float divseries(int j, float x, float y, float t, vec2 startVal, float maxIterations, float thresh) {
 	vec2 k = startVal;
 	int i = 0;
 	for (; i < int(maxIterations) && length(k) < thresh; i++) {

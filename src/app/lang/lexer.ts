@@ -64,6 +64,7 @@ export enum Token {
 	MOUSEY,
 	MOUSE,
 	SERIES,
+	DIV_SERIES,
 	ITERATOR,
 	COMPLEX,
 	GRADIENT,
@@ -184,6 +185,7 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	i: { tok: Token.IMAGINARY, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 
 	Series: { tok: Token.SERIES, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	DivSeries: { tok: Token.DIV_SERIES, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
 	k: { tok: Token.ITERATOR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	z: { tok: Token.COMPLEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	Mag: { tok: Token.MAGNITUDE, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
