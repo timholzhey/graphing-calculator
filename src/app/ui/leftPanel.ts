@@ -17,7 +17,9 @@ export const initLeftPanel = function (): void {
 		document.documentElement.style.setProperty('--left-panel-width', `${width}px`)
 		scheduleRedraw()
 	})
-	
+}
+
+export const initInputs = function (): void {
 	addNewInput()
 }
 

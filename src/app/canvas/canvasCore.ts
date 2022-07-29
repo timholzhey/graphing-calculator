@@ -12,6 +12,7 @@ const ctx = mainCanvas.getContext('2d')
 const zoomButtonIn = document.querySelector('.zoom-in-button') as HTMLButtonElement
 const zoomButtonOut = document.querySelector('.zoom-out-button') as HTMLButtonElement
 const fpsDisplay = document.querySelector('.fps-display') as HTMLDivElement
+const app = document.getElementById('app') as HTMLDivElement
 
 const offset = new Vector(0, 0)
 let scale = 1.0
@@ -23,6 +24,8 @@ const dragFromMouse = new Vector(0, 0)
 let isDragged = false
 
 let gridEnabled = true
+
+let imageDataURL = ''
 
 const zoomCanvas = function (norm: number) {
 	const fact = norm > 0 ? 1 + 0.2 * norm : 1 / (1 - 0.2 * norm)
@@ -37,6 +40,7 @@ const zoomSmooth = function (norm: number): void {
 	const animationResolution = 0.1
 	const step = (targetScale - scale) / (1 / animationResolution)
 	let counter = 0
+	
 	const interval = setInterval(function () {
 		scale += step
 		scheduleRedraw()
@@ -100,6 +104,7 @@ export const initCanvas = function (): boolean {
 	}
 	if (preview && preview === 'true') {
 		enablePreview()
+		app.classList.add('preview')
 		return true
 	}
 
@@ -108,7 +113,7 @@ export const initCanvas = function (): boolean {
 
 export const enablePreview = function (): void {
 	gridEnabled = false
-	document.getElementById('app')?.classList.add('fullscreen')
+	app.classList.add('fullscreen')
 	scheduleRedraw()
 	setTimeout(() => {
 		scheduleSnapshot()
@@ -120,17 +125,23 @@ export const canvasFreezeFrame = function (): void {
 	// merge main canvas with shader canvas
 	const shaderCanvas = document.getElementById('shader-canvas') as HTMLCanvasElement
 	if (!ctx) return
-	ctx.drawImage(shaderCanvas, 0, 0, shaderCanvas.width, shaderCanvas.height)
+	ctx.drawImage(shaderCanvas, 0, 0, mainCanvas.width, mainCanvas.height)
 
 	const img = document.createElement('img')
 	img.src = mainCanvas.toDataURL('image/png')
+	imageDataURL = img.src
+
 	img.style.position = 'absolute'
 	img.style.top = '0'
 	img.style.left = '0'
 	img.style.width = '100%'
 	img.style.height = '100%'
+	img.style.objectFit = 'cover'
+
 	document.body.appendChild(img)
 }
+
+export const canvasGetImageDataURL = (): string => imageDataURL
 
 const setOffset = function (x: number, y: number) {
 	offset.x = -x * (mainCanvas.width / subdivisions)

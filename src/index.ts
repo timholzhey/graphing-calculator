@@ -1,4 +1,4 @@
-import { initLeftPanel } from './app/ui/leftPanel'
+import { initInputs, initLeftPanel } from './app/ui/leftPanel'
 import { initMenuBar } from './app/ui/menubar'
 import { canvasDraw, canvasFreezeFrame, driveCanvas, initCanvas } from './app/canvas/canvasCore'
 import { initUserInteract } from './app/ui/userInteract'
@@ -33,6 +33,7 @@ export const getFPSSmoothed = (): number => fpsBufferSmoothing.reduce((a: number
 window.onload = function () {
 	initUserInteract()
 	initShaderCore()
+	initInputs()
 	
 	if (!initCanvas()) {
 		initMenuBar()
