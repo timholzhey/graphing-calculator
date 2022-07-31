@@ -6,11 +6,15 @@ import { Complex, cpx, factorial, isIterable, perlin2, sigmoid } from '../utils'
 
 let latestError: string | null = null
 let x: number | null
+let iterator = 0
+let index = 1
 
 export const constantEval = function (ast: ASTNode | null): Complex | number {
     if (!ast) return 0
 
     latestError = null
+    iterator = 0
+    index = 1
 
     const result: number = evalNode(ast) as number
 
@@ -502,14 +506,28 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
         case Token.IMAGINARY:
             return { re: 0, im: 1 }
         
-        case Token.SERIES:
-            return reportError('Token SERIES not implemented')
+        case Token.SERIES: {
+            if (node.right == null || node.right.left == null || node.right.right == null || node.right.left.left == null || node.right.left.right == null) {
+                return reportError('Missing argument for Token SERIES')
+            }
+            const start = (evalNode(node.right.left.left) as Complex).re
+            const niter = (evalNode(node.right.left.right) as Complex).re
+            const expr = node.right.right
+            iterator = start
+            for (; index <= niter; index++) {
+                iterator = (evalNode(expr) as Complex).re
+            }
+            return cpx(iterator)
+        }
 
         case Token.DIV_SERIES:
             return reportError('Token SERIES not implemented')
         
         case Token.ITERATOR:
-            return reportError('Token ITERATOR not implemented')
+            return cpx(iterator)
+        
+        case Token.INDEX:
+            return cpx(index)
         
         case Token.COMPLEX:
             return reportError('Token COMPLEX is not allowed')
@@ -524,6 +542,8 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             right = evalNode(node.right) as Complex
             if (right.im === 0) {
                 return cpx(Math.abs(right.re))
+            } if (node.right == null) {
+                return reportError('Missing argument for Token SIGMOID')
             }
             return cpx(Math.sqrt(right.re * right.re + right.im * right.im))
 

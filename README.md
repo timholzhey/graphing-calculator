@@ -13,8 +13,8 @@ Made with ts, webgl and canvas
 `Point` | Displays a point shape | 2 | x, y | 1 | |
 `Polar` | Converts coordinates from cartesian to polar | 1 | set | 2 | `Pol` |
 `Cartesian` | Converts coordinates from polar to cartesian | 1 | set | 2 | `Cart` |
-`Series` | Iterates a series based on an expression and returns the final value | 3 | start, steps, expression | 1/complex | |
-`DivSeries` | Iterates a divergent series up to a threshhold and returns the number of iterations up until divergence | 4 | start, steps, threshhold, expression | 1/complex | |
+`Series` | Iterates a series based on an expression and returns the final value | 3 | start, numIterations, expression | 1 | |
+`DivSeries` | Iterates a divergent series up to a threshhold and returns the number of iterations up until divergence | 4 | start, steps, threshhold, expression | complex | |
 `Mag` | Magnitude of a complex number | 1 | number | complex | |
 
 ## Base functions
@@ -64,6 +64,7 @@ Name | Description |
 `y` | Second dimension variable |
 `t` | Frame time |
 `k` | Iterator for series |
+`j` | Index for series |
 `mouseX` | X position of the mouse |
 `mouseY` | Y position of the mouse |
 `scale` | Scale of the graph grid |

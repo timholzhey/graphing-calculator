@@ -68,6 +68,7 @@ export enum Token {
 	ITERATOR,
 	COMPLEX,
 	GRADIENT,
+	INDEX,
 }
 
 export enum TokenFlag {
@@ -184,9 +185,10 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	// Complex
 	i: { tok: Token.IMAGINARY, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 
-	Series: { tok: Token.SERIES, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
+	Series: { tok: Token.SERIES, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
 	DivSeries: { tok: Token.DIV_SERIES, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY },
 	k: { tok: Token.ITERATOR, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
+	j: { tok: Token.INDEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	z: { tok: Token.COMPLEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	Mag: { tok: Token.MAGNITUDE, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
 	Gradient: { tok: Token.GRADIENT, flags: TokenFlag.PREFIX }

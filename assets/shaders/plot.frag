@@ -191,26 +191,10 @@ vec3 getGradientColorFromValue(float f) {
 	return vec3(noise(step), noise(step+200.0), noise(step+300.0));
 }
 
-/*
-float series(int j, float startVal, float numIterations) {
-	float k = startVal;
-	for (int i = 0; i < int(numIterations); i++) {
-		k = (USER_ITER_EXPR)[j].x;
-	}
-	return k;
-}
-*/
-vec2 series(int j, float x, float y, float t, vec2 startVal, float numIterations) {
-	vec2 k = startVal;
-	for (int i = 0; i < int(numIterations); i++) {
-		k = USER_ITER_EXPR[j];
-	}
-	return k;
-}
 float divseries(int j, float x, float y, float t, vec2 startVal, float maxIterations, float thresh) {
 	vec2 k = startVal;
-	int i = 0;
-	for (; i < int(maxIterations) && length(k) < thresh; i++) {
+	float i = 0.0;
+	for (; i < maxIterations && length(k) < thresh; i += 1.0) {
 		k = USER_ITER_EXPR[j];
 	}
 	return float(i);

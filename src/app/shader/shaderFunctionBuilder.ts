@@ -447,11 +447,7 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
             return complex('vec2(0.0,1.0)')
 
         case Token.SERIES:
-            if (node.right == null || node.right.left == null || node.right.right == null) {
-                return reportError('Missing argument for Token SERIES')
-            }
-            iterExpr = evalNode(node.right.right as ASTNode).val || ''
-            return real(`series(i,x,y,t,${evalNode(node.right.left).val})`)
+            return reportError('Token SERIES is not allowed')
         
         case Token.DIV_SERIES:
             if (node.right == null || node.right.left == null || node.right.right == null) {
@@ -462,6 +458,9 @@ const evalNode = function (node: ASTNode): { val: string | null, cpx: boolean } 
         
         case Token.ITERATOR:
             return real('k')
+        
+        case Token.INDEX:
+            return real('i')
         
         case Token.COMPLEX:
             return reportError('Token COMPLEX is not allowed')
