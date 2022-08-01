@@ -154,6 +154,7 @@ export const getOffset = () => offset
 export const resetCanvas = function (): void {
 	scale = 1.0
 	offset.set(0, 0)
+	gridEnabled = true
 	scheduleRedraw()
 }
 
