@@ -182,7 +182,10 @@ export const drivePlots = (): void => {
         }
         let params = '?'
         params += 'plot=' + inputsStrArr.map(str => encodeURIComponent(str)).join(';')
-        params += '&scale=' + getScale()
+        const scale = getScale()
+        if (scale != 1) {
+            params += '&scale=' + scale
+        }
         window.history.pushState('', '', params)
     }
 }
