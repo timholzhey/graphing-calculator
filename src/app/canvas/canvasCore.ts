@@ -132,7 +132,7 @@ export const canvasFreezeFrame = function (): void {
 	imageDataURL = img.src
 
 	img.style.position = 'absolute'
-	img.style.top = '0'
+	img.style.top = '1em'
 	img.style.left = '0'
 	img.style.width = '100%'
 	img.style.height = '100%'
