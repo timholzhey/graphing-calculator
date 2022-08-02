@@ -183,7 +183,7 @@ export const drivePlots = (): void => {
         let params = '?'
         params += 'plot=' + inputsStrArr.map(str => encodeURIComponent(str)).join(';')
         const scale = getScale()
-        if (scale != 1) {
+        if (scale !== 1) {
             params += '&scale=' + scale
         }
         window.history.pushState('', '', params)
