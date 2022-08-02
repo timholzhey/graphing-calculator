@@ -68,13 +68,14 @@ export const parse = (input: string): ASTNode | null => {
 	const numVars = (ops.filter(op => op.tok === Token.VAR).length > 0 ? 1 : 0) +
 		(ops.filter(op => op.tok === Token.VAR2).length > 0 ? 1 : 0)
 
-	if (ops.filter(op => op.flags & TokenFlag.WEBGL_ONLY).length > 0) {
+	if (ops.filter(op => op.tok === Token.VECTOR_FIELD).length > 0) {
+		driver = PlotDriver.CANVAS
+		displayMode = PlotDisplayMode.VECTOR_FIELD
+	} else if (ops.filter(op => op.flags & TokenFlag.WEBGL_ONLY).length > 0) {
 		driver = PlotDriver.WEBGL
 		displayMode = PlotDisplayMode.SET
 		if (ops.filter(op => op.tok === Token.LEVEL_SET).length > 0) {
 			displayMode = PlotDisplayMode.LEVEL_SET
-		} else if (ops.filter(op => op.tok === Token.VECTOR_FIELD).length > 0) {
-			displayMode = PlotDisplayMode.VECTOR_FIELD
 		} else if (ops.filter(op => op.tok === Token.GRADIENT).length > 0) {
 			displayMode = PlotDisplayMode.GRADIENT
 		}

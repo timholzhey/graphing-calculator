@@ -13,9 +13,56 @@ export class Vector {
 		this.y = y
 	}
 	
-	set (x: number, y: number): void {
+	set (x: number, y: number): Vector {
 		this.x = x
 		this.y = y
+		return this
+	}
+
+	add (v: Vector): Vector {
+		this.x += v.x
+		this.y += v.y
+		return this
+	}
+
+	mult (x: number): Vector {
+		this.x *= x
+		this.y *= x
+		return this
+	}
+
+	copy (): Vector {
+		return new Vector(this.x, this.y)
+	}
+
+	mag (): number {
+		return Math.sqrt(this.x * this.x + this.y * this.y)
+	}
+
+	magSq (): number {
+		return this.x * this.x + this.y * this.y
+	}
+
+	heading (): number {
+		return Math.atan(this.y / this.x)
+	}
+
+	rotate (phi: number): Vector {
+		const newHeading = this.heading() + phi
+		const mag = this.mag()
+		this.x = mag * Math.cos(newHeading)
+		this.y = mag * Math.sin(newHeading)
+		return this
+	}
+
+	normalize (): Vector {
+		const len = this.mag()
+		if (len !== 0) this.mult(1 / len)
+		return this
+	}
+
+	setMag (mag: number): Vector {
+		return this.normalize().mult(mag)
 	}
 }
 

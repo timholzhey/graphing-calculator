@@ -1,5 +1,5 @@
 {
-    "numPlots": 5,
+    "numPlots": 6,
     "plots": [
         {
             "name": "Fourier series",
@@ -7,6 +7,16 @@
                 "a=15",
                 "Series(0,a,k+1/j*sin(jx))",
                 "Series(0,a,k+1/(2j-1)sin((2j-1)x))"
+            ],
+            "defaults": [
+
+            ]
+        },
+        {
+            "name": "Vector field",
+            "inputs": [
+                "VectorField(cos(t)x,sin(t)y)",
+                "VectorField(xx,yy)"
             ],
             "defaults": [
 

@@ -1,10 +1,11 @@
-import { map, Vector } from '../utils'
+import { Complex, isIterable, map, Vector } from '../utils'
 import { getFPSSmoothed, scheduleExit, scheduleRedraw, scheduleSnapshot } from '../../index'
 import { onMouseDrag } from '../ui/userInteract'
 import { ASTNode } from '../lang/parser'
-import { constantEvalGetError, constantEvalX } from '../core/constantEval'
+import { constantEvalGetError, constantEvalX, constantEvalXY } from '../core/constantEval'
 import { bindExternVariable } from '../lang/lexer'
 import { loadPlots } from '../core/controller'
+import { PlotDisplayMode } from '../defines'
 
 export const mainCanvas = document.getElementById('main-canvas') as HTMLCanvasElement
 const ctx = mainCanvas.getContext('2d')
@@ -253,8 +254,78 @@ const drawGrid = function (): void {
 	}
 }
 
-export const canvasDrawFunction = function (ast: ASTNode | null, color: string): void {
+const canvasDrawVectorField = function (ast: ASTNode | null, color: string): void {
 	if (!ctx || !ast) return
+
+	const width = mainCanvas.width
+	const height = mainCanvas.height
+	const aspect = width / height
+
+	ctx.strokeStyle = color
+	ctx.lineWidth = 3
+	ctx.fillStyle = 'transparent'
+	ctx.beginPath()
+
+	const xStep = width / subdivisions / aspect * scale
+	const xOffset = offset.x / xStep
+	const yStep = height / subdivisions * scale
+	const yOffset = offset.y / yStep
+	const _step = 1
+	const maxVecLength = 50
+	
+	for (let y = (-subdivisions - 1) / 2 / scale + yOffset; y < subdivisions / 2 / scale + yOffset; y += _step / scale) {
+		for (let x = -subdivisions / 2 * aspect / scale - xOffset; x < subdivisions / 2 * aspect / scale - xOffset; x += _step / scale) {
+			const res = constantEvalXY(ast, x, y)
+			if (!isIterable(res)) {
+				return
+			}
+			const arr = res as number[]
+			const vec = new Vector(arr[0], arr[1])
+			vec.mult(scale * ctx.lineWidth)
+			if (vec.mag() > maxVecLength) {
+				vec.setMag(maxVecLength)
+			}
+			vec.y *= -1
+
+			const error = constantEvalGetError()
+			if (error) {
+				return
+			}
+
+			const posX = map(x, -subdivisions / 2 * aspect / scale, subdivisions / 2 * aspect / scale, 0, width) + offset.x
+			const posY = map(y, (-subdivisions - 1) / 2 / scale, subdivisions / 2 / scale, height, 0) + offset.y
+			const endX = posX + vec.x
+			const endY = posY + vec.y
+			
+			ctx.moveTo(posX, posY)
+			ctx.lineTo(endX, endY)
+
+			const arrowBaseToHead = vec.copy().mult(0.7)
+			const arrowBase = (new Vector(posX, posY)).add(arrowBaseToHead)
+			const arrowHead = new Vector(endX, endY)
+			const PI = 3.141592653589
+			const leftEdge = arrowBase.copy().add(arrowBaseToHead.copy().rotate(PI / 2).mult(0.1))
+			const rightEdge = arrowBase.copy().add(arrowBaseToHead.copy().rotate(-PI / 2).mult(0.1))
+
+			ctx.fillStyle = color
+			ctx.moveTo(arrowHead.x, arrowHead.y)
+			ctx.lineTo(leftEdge.x, leftEdge.y)
+			ctx.lineTo(rightEdge.x, rightEdge.y)
+			ctx.lineTo(arrowHead.x, arrowHead.y)
+			ctx.fillStyle = 'transparent'
+		}
+	}
+
+	ctx.stroke()
+}
+
+export const canvasDrawFunction = function (ast: ASTNode | null, color: string, mode: PlotDisplayMode): void {
+	if (!ctx || !ast) return
+
+	if (mode === PlotDisplayMode.VECTOR_FIELD) {
+		canvasDrawVectorField(ast, color)
+		return
+	}
 
 	const width = mainCanvas.width
 	const height = mainCanvas.height
@@ -271,7 +342,7 @@ export const canvasDrawFunction = function (ast: ASTNode | null, color: string):
 	
 	for (let x = -subdivisions / 2 * aspect / scale - xOffset; x < subdivisions / 2 * aspect / scale - xOffset; x += step / scale) {
 		const c = constantEvalX(ast, x)
-		const f = typeof c === 'number' ? c : c.re
+		const f = typeof c === 'number' ? c : (c as Complex).re
 
 		const error = constantEvalGetError()
 		if (error) {

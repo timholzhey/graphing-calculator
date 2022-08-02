@@ -192,7 +192,7 @@ export const inputSetErrorAt = function (idx: number, error: string) {
 	indicator.setAttribute('data-error', error)
 }
 
-export const inputSetConstEvalAt = function (idx: number, constEval: Complex | number) {
+export const inputSetConstEvalAt = function (idx: number, constEval: Complex | number | number[]) {
 	const elt = getInputFromIndex(idx)
 	if (!elt) return
 

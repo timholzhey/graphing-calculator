@@ -213,7 +213,7 @@ export const drawPlots = (): void => {
             }
 
             case PlotDriver.CANVAS: {
-                canvasDrawFunction(plot.ast, plot.color)
+                canvasDrawFunction(plot.ast, plot.color, plot.displayMode)
 
                 const constEvalError = constantEvalGetError()
                 if (constEvalError) {
@@ -226,6 +226,10 @@ export const drawPlots = (): void => {
             }
 
             case PlotDriver.WEBGL:
+                break
+            
+            default:
+                console.error('Unhandled plot driver')
                 break
         }
 

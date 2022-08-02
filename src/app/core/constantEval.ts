@@ -6,10 +6,11 @@ import { Complex, cpx, factorial, isIterable, perlin2, sigmoid } from '../utils'
 
 let latestError: string | null = null
 let x: number | null
+let y: number | null
 let iterator = 0
 let index = 1
 
-export const constantEval = function (ast: ASTNode | null): Complex | number {
+export const constantEval = function (ast: ASTNode | null): Complex | number | number[] {
     if (!ast) return 0
 
     latestError = null
@@ -21,12 +22,23 @@ export const constantEval = function (ast: ASTNode | null): Complex | number {
     return result
 }
 
-export const constantEvalX = function (ast: ASTNode | null, _x: number): Complex | number {
+export const constantEvalX = function (ast: ASTNode | null, _x: number): Complex | number | number[] {
     x = _x
 
     const result = constantEval(ast)
 
     x = null
+    return result
+}
+
+export const constantEvalXY = function (ast: ASTNode | null, _x: number, _y: number): Complex | number | number[] {
+    x = _x
+    y = _y
+
+    const result = constantEval(ast)
+
+    x = null
+    y = null
     return result
 }
 
@@ -85,7 +97,10 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             return cpx(x)
         
         case Token.VAR2:
-            return reportError('Token VARIABLE2 is not allowed')
+            if (y == null) {
+                return reportError('Token VARIABLE2 is not defined')
+            }
+            return cpx(y)
 
         case Token.TIME:
             scheduleRedraw()
@@ -374,7 +389,10 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             return reportError('Token LEVEL SET is not allowed')
         
         case Token.VECTOR_FIELD:
-            return reportError('Token VECTOR FIELD is not allowed')
+            if (node.right == null) {
+                return reportError('Missing argument for Token VECTOR FIELD')
+            }
+            return evalNode(node.right)
         
         case Token.LESS:
             if (node.left == null || node.right == null) {
