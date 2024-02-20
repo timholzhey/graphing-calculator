@@ -7,7 +7,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-n": "^15.2.3",
     "eslint-plugin-promise": "^6.0.0",
-    "lint": "^0.7.0",
+    "lint": "^1.1.2",
     "ts-loader": "^9.3.0",
     "typescript": "^4.7.4",
     "webpack": "^5.73.0",
