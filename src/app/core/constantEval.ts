@@ -43,7 +43,7 @@ export const constantEvalXY = function (ast: ASTNode | null, _x: number, _y: num
 }
 
 const reportError = function (error: string): number {
-    console.error('Error during constant evaluation: ' + error)
+    console.debug('Error during constant evaluation: ' + error)
     latestError = error
     return 0
 }

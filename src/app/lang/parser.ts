@@ -28,7 +28,7 @@ export type ASTNode = {
 }
 
 const reportError = (error: string, position: number) => {
-	console.error(`Error at position ${position}: ${error}`)
+	console.debug(`Error at position ${position}: ${error}`)
 	latestError = { desc: error, pos: position }
 }
 

@@ -45,6 +45,7 @@ export const initMenuBar = function (): void {
 
 			const iframe = document.createElement('iframe')
 			iframe.src = `?plot=${exampleJson?.plots[i]?.inputs.map(encodeURIComponent).join(';') || ''}&preview=true`
+			iframe.setAttribute('loading', 'lazy')
 			iframe.classList.add('example-preview')
 			iframe.style.overflow = 'hidden'
 			iframe.style.border = 'none'

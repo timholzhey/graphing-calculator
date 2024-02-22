@@ -182,7 +182,7 @@ function loadShader (type: number, source: string) {
 	
 	// check if shader compiled
 	if (!ctx.getShaderParameter(shader, ctx.COMPILE_STATUS)) {
-		console.error('Failed to compile shader: ' + ctx.getShaderInfoLog(shader))
+		console.debug('Failed to compile shader: ' + ctx.getShaderInfoLog(shader))
 		ctx.getShaderInfoLog(shader)
 		ctx.deleteShader(shader)
 		return null

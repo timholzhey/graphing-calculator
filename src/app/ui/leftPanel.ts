@@ -1,12 +1,12 @@
 import { scheduleRedraw } from '../../index'
-import { resetPlots, setInputAt, setNumInputs } from '../core/controller'
+import { getColorFromIndex, getStatusFromIndex, resetPlots, setInputAt, setNumInputs } from '../core/controller'
 import { PlotDriver, PlotStatus } from '../defines'
 import { Complex, complexToString, isIterable, stringToHTML, Vector } from '../utils'
 import { onMouseDrag } from './userInteract'
 
 const inputsElt: HTMLElement | any = document.querySelector('.inputs')
-const resizeArea: HTMLElement | any = document.querySelector('.resize-left-panel')
-const leftPanel: HTMLElement | any = document.getElementById('left-panel')
+const resizeArea: HTMLElement | any = document.querySelector('.resize-menu-panel')
+const leftPanel: HTMLElement | any = document.getElementById('menu-panel')
 
 let currentInputIndex = 0
 let numInputs = 0
@@ -14,7 +14,7 @@ let numInputs = 0
 export const initLeftPanel = function (): void {
 	onMouseDrag(resizeArea, (mouse: Vector) => {
 		const width = Math.max(250, Math.min(window.innerWidth * 0.95, mouse.x))
-		document.documentElement.style.setProperty('--left-panel-width', `${width}px`)
+		document.documentElement.style.setProperty('--menu-panel-width', `${width}px`)
 		scheduleRedraw()
 	})
 }
@@ -27,7 +27,7 @@ export const addNewInput = function (): void {
 	const eltStr = `
 	<div class="input">
 	<div class="status"><div class="indicator"></div></div>
-	<input type="text" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" autofocus>
+	<input type="text" name="formula" spellcheck="false" autocorrect="off" autocomplete="off" autocapitalize="off" autofocus>
 	<div class="delete">×</div>
 	<div class="const-eval"></div>
 	</div>`
@@ -97,34 +97,36 @@ export const addNewInput = function (): void {
 		}
 
 		elt.classList.add('deleted')
+		numInputs--
+		setNumInputs(numInputs)
+
+		const removedIndex = parseInt(elt.getAttribute('data-input-idx') || '0')
+		
+		// re-index inputs
+		const inputs = inputsElt.querySelectorAll('.input')
+		const inputValues: string[] = []
+		for (let i = 0; i < inputs.length; i++) {
+			inputValues.push(getInputFromIndex(i + 1)?.querySelector('input')?.value || '')
+		}
+		for (let i = 0; i < inputs.length; i++) {
+			const idx = parseInt(inputs[i].getAttribute('data-input-idx') || '0')
+			if (idx > removedIndex) {
+				inputs[i].setAttribute('data-input-idx', (idx - 1).toString())
+				setInputAt(idx - 1, inputValues[i])
+			} else {
+				setInputAt(idx, inputValues[i])
+			}
+		}
 
 		setTimeout(function () {
 			elt.remove()
-			const removedIndex = parseInt(elt.getAttribute('data-input-idx') || '0')
-			numInputs--
-			setNumInputs(numInputs)
-			
-			// re-index inputs
+			// re-color
 			const inputs = inputsElt.querySelectorAll('.input')
 			for (let i = 0; i < inputs.length; i++) {
-				inputs[i].setAttribute('data-input-idx', (i + 1).toString())
-
-				const eltIndicator = inputs[i].querySelector('.indicator')
-				if (eltIndicator?.classList.contains('disabled')) {
-					setInputAt(i + 1, '')
-				} else {
-					setInputAt(i + 1, eltInput.value)
-				}
+				inputSetColorAt(i + 1, getColorFromIndex(i + 1))
+				inputSetStatusAt(i + 1, getStatusFromIndex(i + 1))
 			}
-			
-			// removed element is before current element or first element
-			if (numInputs > 0 && (removedIndex <= currentInputIndex || removedIndex === 1)) {
-				const prevElt = inputsElt.querySelector(`.input[data-input-idx="${currentInputIndex - 1}"]`)
-				activateInput(prevElt)
-				setTimeout(function () {
-					prevElt.querySelector('input')?.focus()
-				}, 0)
-			}
+			scheduleRedraw()
 		}, 120)
 	})
 

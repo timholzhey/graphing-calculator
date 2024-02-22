@@ -22,7 +22,7 @@ export const buildShaderFunction = (ast: ASTNode | null): string | null => {
 }
 
 const reportError = function (error: string): { val: null, cpx: false } {
-    console.error('Error during constant evaluation: ' + error)
+    console.debug('Error during constant evaluation: ' + error)
     latestError = error
     return { val: null, cpx: false }
 }

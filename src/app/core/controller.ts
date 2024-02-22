@@ -53,7 +53,14 @@ export const resetPlots = (): void => {
 }
 
 const colors: string[] = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-const getColorFromIndex = (index: number): string => colors[(index - 1) % colors.length]
+export const getColorFromIndex = (index: number): string => colors[(index - 1) % colors.length]
+
+export const getStatusFromIndex = (index: number): PlotStatus => {
+    if (index < 1 || index > numInputs) {
+        return PlotStatus.PENDING
+    }
+    return plots[index].status
+}
 
 export const loadPlots = function (plots: string[], defaults: string[]) {
     resetCanvas()

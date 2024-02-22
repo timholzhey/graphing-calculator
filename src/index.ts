@@ -12,7 +12,7 @@ let doExit = false
 let frameTime = 0
 let frameDelta = 0
 let lastFrameTimestamp = 0
-const fpsBufferSmoothing: number[] = Array(1).fill(60)
+const fpsBufferSmoothing: number[] = Array(100).fill(60)
 
 export const scheduleRedraw = function (): void {
 	drawFrame = true
