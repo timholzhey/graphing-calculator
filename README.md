@@ -6,11 +6,11 @@ Made with ts, webgl and canvas
 
 | Name | Description | Min num args | Args | Args dimension | Aliases |
 |---|---|---|---|---|---|
-`Level` | Displays the levels of a scalar set | 1 | set, (level subdivisions) | 2 | `Niveau` |
-`Gradient` | Same as Level but with a blended color gradient | 1 | set | 2 | |
-`VectorField` | Displays the vectors of a vector field | 2 | y, y | 1 | |
-`Circle` | Displays a circle shape | 3 | x, y, rad, (fill) | 1 | |
-`Point` | Displays a point shape | 2 | x, y | 1 | |
+`Level` | Displays the levels of a scalar set as different colours | 1 | set, (level subdivisions) | 2 | `Niveau` |
+`Gradient` | Same as Level but with a blended color gradient inbetween levels | 1 | set | 2 | |
+`VectorField` | Displays the vectors of a vector field as arrows | 2 | y, y | 1 | |
+`Circle` | Draws a circle shape | 3 | x, y, rad, (fill) | 1 | |
+`Point` | Draws a point | 2 | x, y | 1 | |
 `Polar` | Converts coordinates from cartesian to polar | 1 | set | 2 | `Pol` |
 `Cartesian` | Converts coordinates from polar to cartesian | 1 | set | 2 | `Cart` |
 `Series` | Iterates a series based on an expression and returns the final value | 3 | start, numIterations, expression | 1 | |
@@ -41,7 +41,7 @@ Made with ts, webgl and canvas
 | `factorial` | Factorial | 1 | `fact` |
 | `sigmoid` | Sigmoid | 1 | |
 | `random` | Random number up to | 1 | `rand` |
-| `noise` | jo | 1 | `perlin` |
+| `noise` | Perlin noise 1d/2d | 1/2 | `perlin` |
 
 ## Base operators
 

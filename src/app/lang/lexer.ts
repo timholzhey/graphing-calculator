@@ -191,7 +191,7 @@ const StringTokenMap: { [key: string]: { tok: Token, flags: number } } = {
 	j: { tok: Token.INDEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	z: { tok: Token.COMPLEX, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.IMPL_MULT_AFTER },
 	Mag: { tok: Token.MAGNITUDE, flags: TokenFlag.IMPL_MULT_BEFORE | TokenFlag.PREFIX },
-	Gradient: { tok: Token.GRADIENT, flags: TokenFlag.PREFIX }
+	Gradient: { tok: Token.GRADIENT, flags: TokenFlag.PREFIX | TokenFlag.WEBGL_ONLY }
 }
 
 const StringConstantMap: { [key: string]: number } = {

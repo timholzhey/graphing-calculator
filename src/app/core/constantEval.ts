@@ -2,7 +2,8 @@ import { getGlobalTime, scheduleRedraw } from '../../index'
 import { getExternVariable, getUserVariable, setUserVariable, Token } from '../lang/lexer'
 import { ASTNode } from '../lang/parser'
 import { getMousePos } from '../ui/userInteract'
-import { Complex, cpx, factorial, isIterable, perlin2, sigmoid } from '../utils'
+import { Complex, cpx, factorial, isIterable, sigmoid, splitmix32 } from '../utils'
+import { mkSimplexNoise } from '../perlin'
 
 let latestError: string | null = null
 let x: number | null
@@ -49,6 +50,8 @@ const reportError = function (error: string): number {
 }
 
 export const constantEvalGetError = (): string | null => latestError
+
+const simplex = mkSimplexNoise(splitmix32(12345))
 
 const evalNode = function (node: ASTNode): number | Complex | number[] {
     let left, right
@@ -361,17 +364,17 @@ const evalNode = function (node: ASTNode): number | Complex | number[] {
             if (node.right == null) {
                 return reportError('Missing argument for Token RANDOM')
             }
-            return cpx(Math.random() * (evalNode(node.right) as number))
+            return cpx(Math.random() * (evalNode(node.right) as Complex).re)
 
         case Token.PERLIN: {
             if (node.right == null) {
                 return reportError('Missing arguments for Token PERLIN')
             }
             if (!isIterable(evalNode(node.right))) {
-                return reportError('Malformed argument for Token PERLIN')
+                return cpx(simplex.noise2D((evalNode(node.right) as Complex).re, 0))
             }
             const [x, y] = evalNode(node.right) as number[]
-            return cpx(perlin2(x, y))
+            return cpx(simplex.noise2D(x, y))
         }
 
         case Token.MOD:
